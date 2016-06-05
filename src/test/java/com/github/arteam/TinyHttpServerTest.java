@@ -1,9 +1,13 @@
 package com.github.arteam;
 
 import com.sun.net.httpserver.BasicAuthenticator;
-import org.apache.http.HttpHeaders;
+import org.apache.http.*;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -14,6 +18,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
@@ -33,6 +39,12 @@ public class TinyHttpServerTest {
         httpServer = new TinyHttpServer().addHandler("/get", (request, response) -> {
             System.out.println(request);
             response.setBody("Hello, World!")
+                    .addHeader("content-type", "text/plain");
+        }).addHandler("/search", (request, response) -> {
+            System.out.println(request);
+            assertThat(request.getQueryParameter("name"), CoreMatchers.equalTo("Andr&as"));
+            assertThat(request.getQueryParameter("city"), CoreMatchers.equalTo("H=mburg"));
+            response.setBody("No Andreas in Hamburg")
                     .addHeader("content-type", "text/plain");
         }).addHandler("/post", (request, response) -> {
             System.out.println(request);
@@ -115,5 +127,22 @@ public class TinyHttpServerTest {
             assertThat(httpResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(401));
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
+    }
+
+    @Test
+    public void testQueryParameters() throws Exception {
+        URI uri = new URIBuilder()
+                .setScheme("http")
+                .setHost("127.0.0.1")
+                .setPort(httpServer.getPort())
+                .setPath("/search")
+                .addParameter("name", "Andr&as")
+                .addParameter("city", "H=mburg")
+                .build();
+        String response = httpClient.execute(new HttpGet(uri), httpResponse -> {
+            assertThat(httpResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(200));
+            return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+        });
+        assertThat(response, CoreMatchers.equalTo("No Andreas in Hamburg"));
     }
 }
