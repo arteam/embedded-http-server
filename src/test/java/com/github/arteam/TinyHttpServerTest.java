@@ -36,11 +36,12 @@ public class TinyHttpServerTest {
                     .addHeader("content-type", "text/plain");
         }).addHandler("/post", (request, response) -> {
             System.out.println(request);
-            System.out.println(request.getFirstHeader("content-type"));
+            assertThat(request.getContentType(), CoreMatchers.equalTo("application/json; charset=UTF-8"));
             response.setBody("{\"message\": \"Roger that!\"}")
                     .addHeader("content-type", "application/json");
         }).addHandler("/protected", (request, response) -> {
             System.out.println(request);
+            assertThat(request.getContentType(), CoreMatchers.equalTo("application/json; charset=UTF-8"));
             response.setBody("{\"message\": \"Roger admin!\"}")
                     .addHeader("content-type", "application/json");
         }, new BasicAuthenticator("tiny-http-server") {

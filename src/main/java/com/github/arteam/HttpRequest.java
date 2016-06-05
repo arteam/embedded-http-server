@@ -44,6 +44,10 @@ public class HttpRequest {
         return headers.getFirst(key);
     }
 
+    public String getContentType() {
+        return getFirstHeader("Content-Type");
+    }
+
     public String getBody() {
         return body;
     }
