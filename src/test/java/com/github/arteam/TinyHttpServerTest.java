@@ -1,5 +1,7 @@
 package com.github.arteam;
 
+import com.sun.net.httpserver.BasicAuthenticator;
+import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -13,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import static org.junit.Assert.assertThat;
 
@@ -36,6 +39,15 @@ public class TinyHttpServerTest {
             System.out.println(request.getFirstHeader("content-type"));
             response.setBody("{\"message\": \"Roger that!\"}")
                     .addHeader("content-type", "application/json");
+        }).addHandler("/protected", (request, response) -> {
+            System.out.println(request);
+            response.setBody("{\"message\": \"Roger admin!\"}")
+                    .addHeader("content-type", "application/json");
+        }, new BasicAuthenticator("tiny-http-server") {
+            @Override
+            public boolean checkCredentials(String username, String password) {
+                return username.equals("scott") && password.equals("tiger");
+            }
         }).start();
         System.out.println("Server port is: " + httpServer.getPort());
         System.out.println("Server host is: " + httpServer.getBindHost());
@@ -77,5 +89,30 @@ public class TinyHttpServerTest {
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
         assertThat(response, CoreMatchers.equalTo("{\"message\": \"Roger that!\"}"));
+    }
+
+    @Test
+    public void testAuth() throws Exception {
+        HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/protected", httpServer.getPort()));
+        httpPost.setEntity(new StringEntity("{\"name\":\"I am the admin!\"}", ContentType.APPLICATION_JSON));
+        httpPost.addHeader(HttpHeaders.AUTHORIZATION,
+                "Basic " + Base64.getEncoder().encodeToString("scott:tiger".getBytes(StandardCharsets.UTF_8)));
+        String response = httpClient.execute(httpPost, httpResponse -> {
+            assertThat(httpResponse.getFirstHeader("Content-Type").getValue(), CoreMatchers.equalTo("application/json"));
+            return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+        });
+        assertThat(response, CoreMatchers.equalTo("{\"message\": \"Roger admin!\"}"));
+    }
+
+    @Test
+    public void testNotAuthorized() throws Exception {
+        HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/protected", httpServer.getPort()));
+        httpPost.setEntity(new StringEntity("{\"name\":\"I am the admin!\"}", ContentType.APPLICATION_JSON));
+        httpPost.addHeader(HttpHeaders.AUTHORIZATION,
+                "Basic " + Base64.getEncoder().encodeToString("bill:wolf".getBytes(StandardCharsets.UTF_8)));
+        httpClient.execute(httpPost, httpResponse -> {
+            assertThat(httpResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(401));
+            return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+        });
     }
 }

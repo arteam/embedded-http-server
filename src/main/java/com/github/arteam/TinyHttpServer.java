@@ -1,6 +1,8 @@
 package com.github.arteam;
 
+import com.sun.net.httpserver.Authenticator;
 import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
@@ -8,7 +10,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -19,12 +21,14 @@ import java.util.Map;
 public class TinyHttpServer implements Closeable {
 
     private HttpServer sunHttpServer;
-    private Map<String, HttpHandler> handlers = new HashMap<>();
+    private List<HttpHandlerConfig> handlers = new ArrayList<>();
 
     public TinyHttpServer addHandler(String path, HttpHandler handler) {
-        if (handlers.put(path, handler) != null) {
-            throw new IllegalArgumentException("Handler on path=" + path + " has been already added");
-        }
+        return addHandler(path, handler, null);
+    }
+
+    public TinyHttpServer addHandler(String path, HttpHandler handler, Authenticator authenticator) {
+        handlers.add(new HttpHandlerConfig(path, handler, authenticator));
         return this;
     }
 
@@ -43,14 +47,14 @@ public class TinyHttpServer implements Closeable {
             throw new RuntimeException(e);
         }
 
-        for (Map.Entry<String, HttpHandler> ph : handlers.entrySet()) {
-            String path = ph.getKey();
-            HttpHandler httpHandler = ph.getValue();
-            sunHttpServer.createContext(path, httpExchange -> {
+        for (HttpHandlerConfig config : handlers) {
+            HttpContext context = sunHttpServer.createContext(config.path, httpExchange -> {
                 try {
+                    HttpContext httpContext = httpExchange.getHttpContext();
+                    httpContext.getAuthenticator().authenticate(httpExchange);
                     Headers requestHeaders = httpExchange.getRequestHeaders();
                     HttpResponse response = new HttpResponse();
-                    httpHandler.handle(new HttpRequest(httpExchange.getRequestMethod(),
+                    config.httpHandler.handle(new HttpRequest(httpExchange.getRequestMethod(),
                             httpExchange.getRequestURI(), httpExchange.getProtocol(), requestHeaders,
                             readFromStream(httpExchange.getRequestBody())), response);
                     for (Map.Entry<String, List<String>> e : response.getHeaders().entrySet()) {
@@ -62,6 +66,9 @@ public class TinyHttpServer implements Closeable {
                     httpExchange.close();
                 }
             });
+            if (config.authenticator != null) {
+                context.setAuthenticator(config.authenticator);
+            }
         }
         sunHttpServer.start();
         return this;
@@ -100,6 +107,18 @@ public class TinyHttpServer implements Closeable {
     private static void writeToStream(OutputStream outputStream, String result) throws IOException {
         try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
             writer.write(result);
+        }
+    }
+
+    private static class HttpHandlerConfig {
+        String path;
+        HttpHandler httpHandler;
+        Authenticator authenticator;
+
+        public HttpHandlerConfig(String path, HttpHandler httpHandler, Authenticator authenticator) {
+            this.path = path;
+            this.httpHandler = httpHandler;
+            this.authenticator = authenticator;
         }
     }
 }
