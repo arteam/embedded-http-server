@@ -67,7 +67,7 @@ public class TinyHttpServerTest {
 
     @Test
     public void testSeveralHelloWorlds() throws Exception {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             assertGetHelloWorld(httpClient);
         }
     }
