@@ -1,8 +1,5 @@
 package com.github.arteam;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -15,7 +12,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertThat;
@@ -40,12 +36,13 @@ public class TinyHttpServerTest {
             System.out.println(request.getFirstHeader("content-type"));
             response.setBody("{\"message\": \"Roger that!\"}")
                     .addHeader("content-type", "application/json");
-        }).start(8080);
+        }).start();
+        System.out.println("Server port is: " + httpServer.getPort());
+        System.out.println("Server host is: " + httpServer.getBindHost());
     }
 
     @After
     public void tearDown() throws Exception {
-        Thread.sleep(10000);
         httpClient.close();
         httpServer.stop();
     }
@@ -63,7 +60,8 @@ public class TinyHttpServerTest {
     }
 
     private void assertGetHelloWorld(CloseableHttpClient httpClient) throws java.io.IOException {
-        String response = httpClient.execute(new HttpGet("http://127.0.0.1:8080"), httpResponse -> {
+        HttpGet httpGet = new HttpGet(String.format("http://127.0.0.1:%s/get", httpServer.getPort()));
+        String response = httpClient.execute(httpGet, httpResponse -> {
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue(), CoreMatchers.equalTo("text/plain"));
             return EntityUtils.toString(httpResponse.getEntity());
         });
@@ -72,7 +70,7 @@ public class TinyHttpServerTest {
 
     @Test
     public void testPost() throws Exception {
-        HttpPost httpPost = new HttpPost("http://127.0.0.1:8080/post");
+        HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/post", httpServer.getPort()));
         httpPost.setEntity(new StringEntity("{\"name\":\"Hello, World!\"}", ContentType.APPLICATION_JSON));
         String response = httpClient.execute(httpPost, httpResponse -> {
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue(), CoreMatchers.equalTo("application/json"));

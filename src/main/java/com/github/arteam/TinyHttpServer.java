@@ -4,6 +4,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
@@ -27,9 +28,17 @@ public class TinyHttpServer {
         return this;
     }
 
+    public TinyHttpServer start() {
+        return start(0);
+    }
+
     public TinyHttpServer start(int port) {
+        return start(new InetSocketAddress(InetAddress.getLoopbackAddress(), port));
+    }
+
+    public TinyHttpServer start(InetSocketAddress address) {
         try {
-            sunHttpServer = HttpServer.create(new InetSocketAddress(port), 50);
+            sunHttpServer = HttpServer.create(address, 50);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -60,6 +69,14 @@ public class TinyHttpServer {
 
     public void stop() {
         sunHttpServer.stop(0);
+    }
+
+    public int getPort() {
+        return sunHttpServer.getAddress().getPort();
+    }
+
+    public String getBindHost() {
+        return sunHttpServer.getAddress().getHostName();
     }
 
     private static String readFromStream(InputStream inputStream) throws IOException {
