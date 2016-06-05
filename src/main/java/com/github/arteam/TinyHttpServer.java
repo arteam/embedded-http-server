@@ -16,7 +16,7 @@ import java.util.Map;
  * @author Artem Prigoda
  * @since 05.06.16
  */
-public class TinyHttpServer {
+public class TinyHttpServer implements Closeable {
 
     private HttpServer sunHttpServer;
     private Map<String, HttpHandler> handlers = new HashMap<>();
@@ -69,6 +69,11 @@ public class TinyHttpServer {
 
     public void stop() {
         sunHttpServer.stop(0);
+    }
+
+    @Override
+    public void close() throws IOException {
+        stop();
     }
 
     public int getPort() {
