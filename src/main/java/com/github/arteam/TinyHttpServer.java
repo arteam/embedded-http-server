@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,35 +18,44 @@ import java.util.Map;
 public class TinyHttpServer {
 
     private HttpServer sunHttpServer;
-    private HttpHandler handler;
+    private Map<String, HttpHandler> handlers = new HashMap<>();
 
-    public TinyHttpServer(HttpHandler handler) {
-        this.handler = handler;
+    public TinyHttpServer addHandler(String path, HttpHandler handler) {
+        if (handlers.put(path, handler) != null) {
+            throw new IllegalArgumentException("Handler on path=" + path + " has been already added");
+        }
+        return this;
     }
 
-    public void start(int port) {
+    public TinyHttpServer start(int port) {
         try {
             sunHttpServer = HttpServer.create(new InetSocketAddress(port), 50);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        sunHttpServer.createContext("/", httpExchange -> {
-            try {
-                Headers requestHeaders = httpExchange.getRequestHeaders();
-                HttpResponse response = new HttpResponse();
-                handler.handle(new HttpRequest(httpExchange.getRequestMethod(),
-                        httpExchange.getRequestURI(), httpExchange.getProtocol(), requestHeaders,
-                        readFromStream(httpExchange.getRequestBody())), response);
-                for (Map.Entry<String, List<String>> e : response.getHeaders().entrySet()) {
-                    httpExchange.getResponseHeaders().put(e.getKey(), e.getValue());
+
+        for (Map.Entry<String, HttpHandler> ph : handlers.entrySet()) {
+            String path = ph.getKey();
+            HttpHandler httpHandler = ph.getValue();
+            sunHttpServer.createContext(path, httpExchange -> {
+                try {
+                    Headers requestHeaders = httpExchange.getRequestHeaders();
+                    HttpResponse response = new HttpResponse();
+                    httpHandler.handle(new HttpRequest(httpExchange.getRequestMethod(),
+                            httpExchange.getRequestURI(), httpExchange.getProtocol(), requestHeaders,
+                            readFromStream(httpExchange.getRequestBody())), response);
+                    for (Map.Entry<String, List<String>> e : response.getHeaders().entrySet()) {
+                        httpExchange.getResponseHeaders().put(e.getKey(), e.getValue());
+                    }
+                    httpExchange.sendResponseHeaders(response.getStatusCode(), response.getBody().length());
+                    writeToStream(httpExchange.getResponseBody(), response.getBody());
+                } finally {
+                    httpExchange.close();
                 }
-                httpExchange.sendResponseHeaders(response.getStatusCode(), response.getBody().length());
-                writeToStream(httpExchange.getResponseBody(), response.getBody());
-            } finally {
-                httpExchange.close();
-            }
-        });
+            });
+        }
         sunHttpServer.start();
+        return this;
     }
 
     public void stop() {
