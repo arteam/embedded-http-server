@@ -50,8 +50,6 @@ public class TinyHttpServer implements Closeable {
         for (HttpHandlerConfig config : handlers) {
             HttpContext context = sunHttpServer.createContext(config.path, httpExchange -> {
                 try {
-                    HttpContext httpContext = httpExchange.getHttpContext();
-                    httpContext.getAuthenticator().authenticate(httpExchange);
                     Headers requestHeaders = httpExchange.getRequestHeaders();
                     HttpResponse response = new HttpResponse();
                     config.httpHandler.handle(new HttpRequest(httpExchange.getRequestMethod(),
@@ -111,11 +109,12 @@ public class TinyHttpServer implements Closeable {
     }
 
     private static class HttpHandlerConfig {
-        String path;
-        HttpHandler httpHandler;
-        Authenticator authenticator;
 
-        public HttpHandlerConfig(String path, HttpHandler httpHandler, Authenticator authenticator) {
+        private final String path;
+        private final HttpHandler httpHandler;
+        private final Authenticator authenticator;
+
+        HttpHandlerConfig(String path, HttpHandler httpHandler, Authenticator authenticator) {
             this.path = path;
             this.httpHandler = httpHandler;
             this.authenticator = authenticator;
