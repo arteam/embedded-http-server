@@ -8,9 +8,13 @@ import com.sun.net.httpserver.Headers;
  */
 public class HttpResponse {
 
-    private final int statusCode;
-    private final Headers headers;
-    private final String body;
+    private int statusCode;
+    private Headers headers;
+    private String body;
+
+    public HttpResponse() {
+        this(200, new Headers(), "");
+    }
 
     public HttpResponse(int statusCode, Headers headers, String body) {
         this.statusCode = statusCode;
@@ -18,20 +22,36 @@ public class HttpResponse {
         this.body = body;
     }
 
-    public HttpResponse(String body) {
-        this(200, new Headers(), body);
-    }
-
     public int getStatusCode() {
         return statusCode;
+    }
+
+    public HttpResponse setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+        return this;
     }
 
     public Headers getHeaders() {
         return headers;
     }
 
+    public HttpResponse addHeader(String name, String value) {
+        headers.add(name, value);
+        return this;
+    }
+
+    public HttpResponse setHeaders(Headers headers) {
+        this.headers = headers;
+        return this;
+    }
+
     public String getBody() {
         return body;
+    }
+
+    public HttpResponse setBody(String body) {
+        this.body = body;
+        return this;
     }
 
     @Override

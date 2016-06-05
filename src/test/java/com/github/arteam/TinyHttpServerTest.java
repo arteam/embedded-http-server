@@ -22,11 +22,10 @@ public class TinyHttpServerTest {
 
     @Before
     public void setUp() throws Exception {
-        httpServer = new TinyHttpServer(request -> {
+        httpServer = new TinyHttpServer((request, response) -> {
             System.out.println(request);
-            HttpResponse httpResponse = new HttpResponse("Hello, World!");
-            httpResponse.getHeaders().add("Content-Type", "text/plain");
-            return httpResponse;
+            response.setBody("Hello, World!")
+                    .addHeader("Content-Type", "text/plain");
         });
         httpServer.start(8080);
     }
@@ -39,11 +38,7 @@ public class TinyHttpServerTest {
     @Test
     public void testHelloWorld() throws Exception {
         try (CloseableHttpClient httpClient = HttpClients.createMinimal()) {
-            String response = httpClient.execute(new HttpGet("http://127.0.0.1:8080"), httpResponse -> {
-                assertThat(httpResponse.getFirstHeader("Content-Type").getValue(), CoreMatchers.equalTo("text/plain"));
-                return EntityUtils.toString(httpResponse.getEntity());
-            });
-            assertThat(response, CoreMatchers.equalTo("Hello, World!"));
+            assertGetHelloWorld(httpClient);
         }
     }
 
@@ -51,13 +46,16 @@ public class TinyHttpServerTest {
     public void testSeveralHelloWorlds() throws Exception {
         try (CloseableHttpClient httpClient = HttpClients.createMinimal()) {
             for (int i = 0; i < 100; i++) {
-                String response = httpClient.execute(new HttpGet("http://127.0.0.1:8080"), httpResponse -> {
-                    assertThat(httpResponse.getFirstHeader("Content-Type").getValue(), CoreMatchers.equalTo("text/plain"));
-                    return EntityUtils.toString(httpResponse.getEntity());
-                });
-                assertThat(response, CoreMatchers.equalTo("Hello, World!"));
+                assertGetHelloWorld(httpClient);
             }
         }
     }
 
+    private void assertGetHelloWorld(CloseableHttpClient httpClient) throws java.io.IOException {
+        String response = httpClient.execute(new HttpGet("http://127.0.0.1:8080"), httpResponse -> {
+            assertThat(httpResponse.getFirstHeader("Content-Type").getValue(), CoreMatchers.equalTo("text/plain"));
+            return EntityUtils.toString(httpResponse.getEntity());
+        });
+        assertThat(response, CoreMatchers.equalTo("Hello, World!"));
+    }
 }

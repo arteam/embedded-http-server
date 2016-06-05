@@ -32,9 +32,10 @@ public class TinyHttpServer {
         sunHttpServer.createContext("/", httpExchange -> {
             try {
                 Headers requestHeaders = httpExchange.getRequestHeaders();
-                HttpResponse response = handler.handle(new HttpRequest(httpExchange.getRequestMethod(),
+                HttpResponse response = new HttpResponse();
+                handler.handle(new HttpRequest(httpExchange.getRequestMethod(),
                         httpExchange.getRequestURI(), httpExchange.getProtocol(), requestHeaders,
-                        readFromStream(httpExchange.getRequestBody())));
+                        readFromStream(httpExchange.getRequestBody())), response);
                 for (Map.Entry<String, List<String>> e : response.getHeaders().entrySet()) {
                     httpExchange.getResponseHeaders().put(e.getKey(), e.getValue());
                 }

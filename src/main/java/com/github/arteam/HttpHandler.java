@@ -7,5 +7,5 @@ package com.github.arteam;
 @FunctionalInterface
 public interface HttpHandler {
 
-    HttpResponse handle(HttpRequest request);
+    void handle(HttpRequest request, HttpResponse response);
 }
