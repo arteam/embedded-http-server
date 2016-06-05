@@ -24,6 +24,30 @@ public class HttpRequest {
         this.body = body;
     }
 
+    public String getMethod() {
+        return method;
+    }
+
+    public URI getUri() {
+        return uri;
+    }
+
+    public String getProtocolVersion() {
+        return protocolVersion;
+    }
+
+    public Headers getHeaders() {
+        return headers;
+    }
+
+    public String getFirstHeader(String key) {
+        return headers.getFirst(key);
+    }
+
+    public String getBody() {
+        return body;
+    }
+
     @Override
     public String toString() {
         return "HttpRequest{" + "method='" + method + '\'' +
