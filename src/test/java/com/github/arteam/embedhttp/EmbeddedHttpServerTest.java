@@ -1,6 +1,5 @@
-package com.github.arteam.tinyhttp;
+package com.github.arteam.embedhttp;
 
-import com.github.arteam.tinyhttp.TinyHttpServer;
 import com.sun.net.httpserver.BasicAuthenticator;
 import org.apache.http.*;
 import org.apache.http.client.methods.HttpGet;
@@ -26,14 +25,14 @@ import static org.junit.Assert.assertThat;
  * @author Artem Prigoda
  * @since 05.06.16
  */
-public class TinyHttpServerTest {
+public class EmbeddedHttpServerTest {
 
-    private TinyHttpServer httpServer;
+    private EmbeddedHttpServer httpServer;
     private CloseableHttpClient httpClient = HttpClients.createMinimal();
 
     @Before
     public void setUp() throws Exception {
-        httpServer = new TinyHttpServer().addHandler("/get", (request, response) -> {
+        httpServer = new EmbeddedHttpServer().addHandler("/get", (request, response) -> {
             System.out.println(request);
             response.setBody("Hello, World!")
                     .addHeader("content-type", "text/plain");

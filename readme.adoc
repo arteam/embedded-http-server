@@ -1,11 +1,11 @@
-# Tiny HTTP server
+# Embedded HTTP server
 
-`tiny-http-server` is a light and minimalistic HTTP server for Java with zero dependencies
+`embedded-http-server` is a light and minimalistic HTTP server for Java with zero dependencies
 and quick startup time.
 
 ## Description
 
-`tiny-http-server` is a thin wrapper around `com.sun.net.HttpServer`. The latter server is
+`embedded-http-server` is a thin wrapper around `com.sun.net.HttpServer`. The latter server is
 quite fast, provides a Java API for accessing requests/responses, and already shipped in
 the JDK. Unfortunately, its API is quite confusing, not documented and the server lacks
 error reporting. This project aims to solve these problems by providing a nice and functional

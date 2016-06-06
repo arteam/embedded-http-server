@@ -1,4 +1,4 @@
-package com.github.arteam.tinyhttp;
+package com.github.arteam.embedhttp;
 
 import com.sun.net.httpserver.Authenticator;
 import com.sun.net.httpserver.Headers;
@@ -18,29 +18,29 @@ import java.util.Map;
  * @author Artem Prigoda
  * @since 05.06.16
  */
-public class TinyHttpServer implements Closeable {
+public class EmbeddedHttpServer implements Closeable {
 
     private HttpServer sunHttpServer;
     private List<HttpHandlerConfig> handlers = new ArrayList<>();
 
-    public TinyHttpServer addHandler(String path, HttpHandler handler) {
+    public EmbeddedHttpServer addHandler(String path, HttpHandler handler) {
         return addHandler(path, handler, null);
     }
 
-    public TinyHttpServer addHandler(String path, HttpHandler handler, Authenticator authenticator) {
+    public EmbeddedHttpServer addHandler(String path, HttpHandler handler, Authenticator authenticator) {
         handlers.add(new HttpHandlerConfig(path, handler, authenticator));
         return this;
     }
 
-    public TinyHttpServer start() {
+    public EmbeddedHttpServer start() {
         return start(0);
     }
 
-    public TinyHttpServer start(int port) {
+    public EmbeddedHttpServer start(int port) {
         return start(new InetSocketAddress(InetAddress.getLoopbackAddress(), port));
     }
 
-    public TinyHttpServer start(InetSocketAddress address) {
+    public EmbeddedHttpServer start(InetSocketAddress address) {
         try {
             sunHttpServer = HttpServer.create(address, 50);
         } catch (IOException e) {

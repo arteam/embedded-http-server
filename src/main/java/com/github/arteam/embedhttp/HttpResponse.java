@@ -1,4 +1,4 @@
-package com.github.arteam.tinyhttp;
+package com.github.arteam.embedhttp;
 
 import com.sun.net.httpserver.Headers;
 
