@@ -1,4 +1,4 @@
-package com.github.arteam;
+package com.github.arteam.tinyhttp;
 
 /**
  * @author Artem Prigoda

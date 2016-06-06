@@ -1,4 +1,4 @@
-package com.github.arteam;
+package com.github.arteam.tinyhttp;
 
 import com.sun.net.httpserver.Authenticator;
 import com.sun.net.httpserver.Headers;

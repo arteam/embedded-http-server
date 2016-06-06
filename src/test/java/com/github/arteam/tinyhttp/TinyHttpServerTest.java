@@ -1,10 +1,8 @@
-package com.github.arteam;
+package com.github.arteam.tinyhttp;
 
+import com.github.arteam.tinyhttp.TinyHttpServer;
 import com.sun.net.httpserver.BasicAuthenticator;
 import org.apache.http.*;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
@@ -18,7 +16,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
