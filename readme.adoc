@@ -32,5 +32,5 @@ or even with http://docs.oracle.com/javase/8/docs/api/java/net/URLConnection.htm
 ## Alternatives
 
 If you need a real HTTP server for production systems, you should definitely use take a look at
-http://www.eclipse.org/jetty/[Jetty],https://tomcat.apache.org/[Tomcat], http://undertow.io/[Undertow],
+http://www.eclipse.org/jetty/[Jetty], https://tomcat.apache.org/[Tomcat], http://undertow.io/[Undertow],
 or http://netty.io/[Netty].
