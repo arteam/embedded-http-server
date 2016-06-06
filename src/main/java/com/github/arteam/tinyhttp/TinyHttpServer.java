@@ -60,6 +60,8 @@ public class TinyHttpServer implements Closeable {
                     }
                     httpExchange.sendResponseHeaders(response.getStatusCode(), response.getBody().length());
                     writeToStream(httpExchange.getResponseBody(), response.getBody());
+                } catch (Exception e) {
+                    e.printStackTrace();
                 } finally {
                     httpExchange.close();
                 }
