@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Represents a simple HTTP server (a facade around {@link com.sun.net.httpserver.HttpServer for unit testing.
+ * The server is started after invoking the {@link EmbeddedHttpServer#start()} method. It's a good practice
+ * to shutdown it with {@link EmbeddedHttpServer#stop()} method.
+ *
  * @author Artem Prigoda
  * @since 05.06.16
  */
@@ -23,23 +27,38 @@ public class EmbeddedHttpServer implements Closeable {
     private HttpServer sunHttpServer;
     private List<HttpHandlerConfig> handlers = new ArrayList<>();
 
+    /**
+     * Adds a new handler to the server to a path.
+     */
     public EmbeddedHttpServer addHandler(String path, HttpHandler handler) {
         return addHandler(path, handler, null);
     }
 
+    /**
+     * Adds a new handler to the server to a path with an authenticator.
+     */
     public EmbeddedHttpServer addHandler(String path, HttpHandler handler, Authenticator authenticator) {
         handlers.add(new HttpHandlerConfig(path, handler, authenticator));
         return this;
     }
 
+    /**
+     * Starts up the current server on a free port on the localhost.
+     */
     public EmbeddedHttpServer start() {
         return start(0);
     }
 
+    /**
+     * Starts up the server on the provided port on the provided port on the localhost.
+     */
     public EmbeddedHttpServer start(int port) {
         return start(new InetSocketAddress(InetAddress.getLoopbackAddress(), port));
     }
 
+    /**
+     * Starts up the server on provided address.
+     */
     public EmbeddedHttpServer start(InetSocketAddress address) {
         try {
             sunHttpServer = HttpServer.create(address, 50);
@@ -74,23 +93,38 @@ public class EmbeddedHttpServer implements Closeable {
         return this;
     }
 
+    /**
+     * Stops the current server and frees resources.
+     */
     public void stop() {
         sunHttpServer.stop(0);
     }
 
+    /**
+     * Invokes {@link EmbeddedHttpServer#stop()}.
+     */
     @Override
     public void close() throws IOException {
         stop();
     }
 
+    /**
+     * Get the port on which server has been started.
+     */
     public int getPort() {
         return sunHttpServer.getAddress().getPort();
     }
 
+    /**
+     * Gets the host on which server has been bound.
+     */
     public String getBindHost() {
         return sunHttpServer.getAddress().getHostName();
     }
 
+    /**
+     * Reads the provided input stream to a string in the UTF-8 encoding
+     */
     private static String readFromStream(InputStream inputStream) throws IOException {
         try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
             StringBuilder stringBuilder = new StringBuilder();
@@ -104,6 +138,9 @@ public class EmbeddedHttpServer implements Closeable {
         }
     }
 
+    /**
+     * Writes the provided string to the provided output steam in the UTF-8 encoding
+     */
     private static void writeToStream(OutputStream outputStream, String result) throws IOException {
         try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
             writer.write(result);

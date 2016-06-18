@@ -32,32 +32,33 @@ public class EmbeddedHttpServerTest {
 
     @Before
     public void setUp() throws Exception {
-        httpServer = new EmbeddedHttpServer().addHandler("/get", (request, response) -> {
-            System.out.println(request);
-            response.setBody("Hello, World!")
-                    .addHeader("content-type", "text/plain");
-        }).addHandler("/search", (request, response) -> {
-            System.out.println(request);
-            assertThat(request.getQueryParameter("name"), CoreMatchers.equalTo("Andr&as"));
-            assertThat(request.getQueryParameter("city"), CoreMatchers.equalTo("H=mburg"));
-            response.setBody("No Andreas in Hamburg")
-                    .addHeader("content-type", "text/plain");
-        }).addHandler("/post", (request, response) -> {
-            System.out.println(request);
-            assertThat(request.getContentType(), CoreMatchers.equalTo("application/json; charset=UTF-8"));
-            response.setBody("{\"message\": \"Roger that!\"}")
-                    .addHeader("content-type", "application/json");
-        }).addHandler("/protected", (request, response) -> {
-            System.out.println(request);
-            assertThat(request.getContentType(), CoreMatchers.equalTo("application/json; charset=UTF-8"));
-            response.setBody("{\"message\": \"Roger admin!\"}")
-                    .addHeader("content-type", "application/json");
-        }, new BasicAuthenticator("tiny-http-server") {
-            @Override
-            public boolean checkCredentials(String username, String password) {
-                return username.equals("scott") && password.equals("tiger");
-            }
-        }).start();
+        httpServer = new EmbeddedHttpServer()
+                .addHandler("/get", (request, response) -> {
+                    System.out.println(request);
+                    response.setBody("Hello, World!")
+                            .addHeader("content-type", "text/plain");
+                }).addHandler("/search", (request, response) -> {
+                    System.out.println(request);
+                    assertThat(request.getQueryParameter("name"), CoreMatchers.equalTo("Andr&as"));
+                    assertThat(request.getQueryParameter("city"), CoreMatchers.equalTo("H=mburg"));
+                    response.setBody("No Andreas in Hamburg")
+                            .addHeader("content-type", "text/plain");
+                }).addHandler("/post", (request, response) -> {
+                    System.out.println(request);
+                    assertThat(request.getContentType(), CoreMatchers.equalTo("application/json; charset=UTF-8"));
+                    response.setBody("{\"message\": \"Roger that!\"}")
+                            .addHeader("content-type", "application/json");
+                }).addHandler("/protected", (request, response) -> {
+                    System.out.println(request);
+                    assertThat(request.getContentType(), CoreMatchers.equalTo("application/json; charset=UTF-8"));
+                    response.setBody("{\"message\": \"Roger admin!\"}")
+                            .addHeader("content-type", "application/json");
+                }, new BasicAuthenticator("tiny-http-server") {
+                    @Override
+                    public boolean checkCredentials(String username, String password) {
+                        return username.equals("scott") && password.equals("tiger");
+                    }
+                }).start();
         System.out.println("Server port is: " + httpServer.getPort());
         System.out.println("Server host is: " + httpServer.getBindHost());
     }
