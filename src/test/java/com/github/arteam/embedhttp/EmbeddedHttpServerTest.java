@@ -2,7 +2,9 @@ package com.github.arteam.embedhttp;
 
 import com.github.arteam.embedhttp.junit.EmbeddedHttpServerRule;
 import com.sun.net.httpserver.BasicAuthenticator;
-import org.apache.http.*;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
@@ -10,6 +12,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
@@ -20,6 +23,7 @@ import org.junit.Test;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collections;
 
 import static org.junit.Assert.assertThat;
 
@@ -43,10 +47,15 @@ public class EmbeddedHttpServerTest {
                         .addHeader("content-type", "text/plain");
             }).addHandler("/post", (request, response) -> {
                 System.out.println(request);
-                assertThat(request.getContentType(), CoreMatchers.equalTo("application/json; charset=UTF-8"));
+                if (!request.getContentType().equals("application/json; charset=UTF-8")) {
+                    response.setStatusCode(400);
+                    return;
+                }
                 response.setBody("{\"message\": \"Roger that!\"}")
                         .addHeader("content-type", "application/json");
-            }).addHandler("/protected", (request, response) -> {
+            })
+            .addHandler("/error", ((request, response) -> response.setStatusCode(500)))
+            .addHandler("/protected", (request, response) -> {
                 System.out.println(request);
                 assertThat(request.getContentType(), CoreMatchers.equalTo("application/json; charset=UTF-8"));
                 response.setBody("{\"message\": \"Roger admin!\"}")
@@ -101,6 +110,34 @@ public class EmbeddedHttpServerTest {
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
         assertThat(response, CoreMatchers.equalTo("{\"message\": \"Roger that!\"}"));
+    }
+
+    @Test
+    public void testBadRequest() throws Exception {
+        HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/post", httpServer.getPort()));
+        httpPost.setEntity(new UrlEncodedFormEntity(Collections.singletonList(
+                new BasicNameValuePair("greeting", "Hello, World!"))));
+        try (CloseableHttpResponse httpResponse = httpClient.execute(httpPost);) {
+            assertThat(httpResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(400));
+        }
+    }
+
+    @Test
+    public void testWrongPath() throws Exception {
+        HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/dead_letter", httpServer.getPort()));
+        httpPost.setEntity(new StringEntity("{\"name\":\"Hello, World!\"}", ContentType.APPLICATION_JSON));
+        try (CloseableHttpResponse httpResponse = httpClient.execute(httpPost);) {
+            assertThat(httpResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(404));
+        }
+    }
+
+    @Test
+    public void testServerError() throws Exception {
+        HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/error", httpServer.getPort()));
+        httpPost.setEntity(new StringEntity("{\"name\":\"Hello, World!\"}", ContentType.APPLICATION_JSON));
+        try (CloseableHttpResponse httpResponse = httpClient.execute(httpPost);) {
+            assertThat(httpResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(500));
+        }
     }
 
     @Test
