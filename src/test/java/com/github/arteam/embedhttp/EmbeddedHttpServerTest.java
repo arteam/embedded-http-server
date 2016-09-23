@@ -1,5 +1,6 @@
 package com.github.arteam.embedhttp;
 
+import com.github.arteam.embedhttp.junit.EmbeddedHttpServerRule;
 import com.sun.net.httpserver.BasicAuthenticator;
 import org.apache.http.*;
 import org.apache.http.client.methods.HttpGet;
@@ -13,6 +14,7 @@ import org.apache.http.util.EntityUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.net.URI;
@@ -27,38 +29,39 @@ import static org.junit.Assert.assertThat;
  */
 public class EmbeddedHttpServerTest {
 
-    private EmbeddedHttpServer httpServer;
+    @Rule
+    public EmbeddedHttpServerRule httpServer = new EmbeddedHttpServerRule()
+            .addHandler("/get", (request, response) -> {
+                System.out.println(request);
+                response.setBody("Hello, World!")
+                        .addHeader("content-type", "text/plain");
+            }).addHandler("/search", (request, response) -> {
+                System.out.println(request);
+                assertThat(request.getQueryParameter("name"), CoreMatchers.equalTo("Andr&as"));
+                assertThat(request.getQueryParameter("city"), CoreMatchers.equalTo("H=mburg"));
+                response.setBody("No Andreas in Hamburg")
+                        .addHeader("content-type", "text/plain");
+            }).addHandler("/post", (request, response) -> {
+                System.out.println(request);
+                assertThat(request.getContentType(), CoreMatchers.equalTo("application/json; charset=UTF-8"));
+                response.setBody("{\"message\": \"Roger that!\"}")
+                        .addHeader("content-type", "application/json");
+            }).addHandler("/protected", (request, response) -> {
+                System.out.println(request);
+                assertThat(request.getContentType(), CoreMatchers.equalTo("application/json; charset=UTF-8"));
+                response.setBody("{\"message\": \"Roger admin!\"}")
+                        .addHeader("content-type", "application/json");
+            }, new BasicAuthenticator("tiny-http-server") {
+                @Override
+                public boolean checkCredentials(String username, String password) {
+                    return username.equals("scott") && password.equals("tiger");
+                }
+            });
+
     private CloseableHttpClient httpClient = HttpClients.createMinimal();
 
     @Before
     public void setUp() throws Exception {
-        httpServer = new EmbeddedHttpServer()
-                .addHandler("/get", (request, response) -> {
-                    System.out.println(request);
-                    response.setBody("Hello, World!")
-                            .addHeader("content-type", "text/plain");
-                }).addHandler("/search", (request, response) -> {
-                    System.out.println(request);
-                    assertThat(request.getQueryParameter("name"), CoreMatchers.equalTo("Andr&as"));
-                    assertThat(request.getQueryParameter("city"), CoreMatchers.equalTo("H=mburg"));
-                    response.setBody("No Andreas in Hamburg")
-                            .addHeader("content-type", "text/plain");
-                }).addHandler("/post", (request, response) -> {
-                    System.out.println(request);
-                    assertThat(request.getContentType(), CoreMatchers.equalTo("application/json; charset=UTF-8"));
-                    response.setBody("{\"message\": \"Roger that!\"}")
-                            .addHeader("content-type", "application/json");
-                }).addHandler("/protected", (request, response) -> {
-                    System.out.println(request);
-                    assertThat(request.getContentType(), CoreMatchers.equalTo("application/json; charset=UTF-8"));
-                    response.setBody("{\"message\": \"Roger admin!\"}")
-                            .addHeader("content-type", "application/json");
-                }, new BasicAuthenticator("tiny-http-server") {
-                    @Override
-                    public boolean checkCredentials(String username, String password) {
-                        return username.equals("scott") && password.equals("tiger");
-                    }
-                }).start();
         System.out.println("Server port is: " + httpServer.getPort());
         System.out.println("Server host is: " + httpServer.getBindHost());
     }
@@ -66,7 +69,6 @@ public class EmbeddedHttpServerTest {
     @After
     public void tearDown() throws Exception {
         httpClient.close();
-        httpServer.stop();
     }
 
     @Test
