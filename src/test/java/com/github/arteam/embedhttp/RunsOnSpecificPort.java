@@ -5,12 +5,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 /**
  * @author Artem Prigoda
@@ -35,10 +35,10 @@ public class RunsOnSpecificPort {
     public void test() throws Exception {
         HttpGet httpGet = new HttpGet("http://127.0.0.1:15678/hello");
         String response = httpClient.execute(httpGet, httpResponse -> {
-            assertThat(httpResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(200));
-            assertThat(httpResponse.getFirstHeader("Content-Type").getValue(), CoreMatchers.equalTo("text/plain"));
+            assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(200);
+            assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("text/plain");
             return EntityUtils.toString(httpResponse.getEntity());
         });
-        assertThat(response, CoreMatchers.equalTo("Hello, World!"));
+        assertThat(response).isEqualTo("Hello, World!");
     }
 }

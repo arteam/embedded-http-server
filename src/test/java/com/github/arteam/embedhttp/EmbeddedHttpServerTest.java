@@ -14,7 +14,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,7 +24,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
 
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 /**
  * @author Artem Prigoda
@@ -41,8 +41,8 @@ public class EmbeddedHttpServerTest {
                         .addHeader("content-type", "text/plain");
             }).addHandler("/search", (request, response) -> {
                 System.out.println(request);
-                assertThat(request.getQueryParameter("name"), CoreMatchers.equalTo("Andr&as"));
-                assertThat(request.getQueryParameter("city"), CoreMatchers.equalTo("H=mburg"));
+                assertThat(request.getQueryParameter("name")).isEqualTo("Andr&as");
+                assertThat(request.getQueryParameter("city")).isEqualTo("H=mburg");
                 response.setBody("No Andreas in Hamburg")
                         .addHeader("content-type", "text/plain");
             }).addHandler("/post", (request, response) -> {
@@ -57,7 +57,7 @@ public class EmbeddedHttpServerTest {
             .addHandler("/error", ((request, response) -> response.setStatusCode(500)))
             .addHandler("/protected", (request, response) -> {
                 System.out.println(request);
-                assertThat(request.getContentType(), CoreMatchers.equalTo("application/json; charset=UTF-8"));
+                assertThat(request.getContentType()).isEqualTo("application/json; charset=UTF-8");
                 response.setBody("{\"message\": \"Roger admin!\"}")
                         .addHeader("content-type", "application/json");
             }, new BasicAuthenticator("tiny-http-server") {
@@ -95,10 +95,10 @@ public class EmbeddedHttpServerTest {
     private void assertGetHelloWorld(CloseableHttpClient httpClient) throws java.io.IOException {
         HttpGet httpGet = new HttpGet(String.format("http://127.0.0.1:%s/get", httpServer.getPort()));
         String response = httpClient.execute(httpGet, httpResponse -> {
-            assertThat(httpResponse.getFirstHeader("Content-Type").getValue(), CoreMatchers.equalTo("text/plain"));
+            assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("text/plain");
             return EntityUtils.toString(httpResponse.getEntity());
         });
-        assertThat(response, CoreMatchers.equalTo("Hello, World!"));
+        assertThat(response).isEqualTo("Hello, World!");
     }
 
     @Test
@@ -106,10 +106,10 @@ public class EmbeddedHttpServerTest {
         HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/post", httpServer.getPort()));
         httpPost.setEntity(new StringEntity("{\"name\":\"Hello, World!\"}", ContentType.APPLICATION_JSON));
         String response = httpClient.execute(httpPost, httpResponse -> {
-            assertThat(httpResponse.getFirstHeader("Content-Type").getValue(), CoreMatchers.equalTo("application/json"));
+            assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("application/json");
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
-        assertThat(response, CoreMatchers.equalTo("{\"message\": \"Roger that!\"}"));
+        assertThat(response).isEqualTo("{\"message\": \"Roger that!\"}");
     }
 
     @Test
@@ -118,7 +118,7 @@ public class EmbeddedHttpServerTest {
         httpPost.setEntity(new UrlEncodedFormEntity(Collections.singletonList(
                 new BasicNameValuePair("greeting", "Hello, World!"))));
         try (CloseableHttpResponse httpResponse = httpClient.execute(httpPost);) {
-            assertThat(httpResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(400));
+            assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(400);
         }
     }
 
@@ -127,7 +127,7 @@ public class EmbeddedHttpServerTest {
         HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/dead_letter", httpServer.getPort()));
         httpPost.setEntity(new StringEntity("{\"name\":\"Hello, World!\"}", ContentType.APPLICATION_JSON));
         try (CloseableHttpResponse httpResponse = httpClient.execute(httpPost);) {
-            assertThat(httpResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(404));
+            assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(404);
         }
     }
 
@@ -136,7 +136,7 @@ public class EmbeddedHttpServerTest {
         HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/error", httpServer.getPort()));
         httpPost.setEntity(new StringEntity("{\"name\":\"Hello, World!\"}", ContentType.APPLICATION_JSON));
         try (CloseableHttpResponse httpResponse = httpClient.execute(httpPost);) {
-            assertThat(httpResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(500));
+            assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(500);
         }
     }
 
@@ -147,10 +147,10 @@ public class EmbeddedHttpServerTest {
         httpPost.addHeader(HttpHeaders.AUTHORIZATION,
                 "Basic " + Base64.getEncoder().encodeToString("scott:tiger".getBytes(StandardCharsets.UTF_8)));
         String response = httpClient.execute(httpPost, httpResponse -> {
-            assertThat(httpResponse.getFirstHeader("Content-Type").getValue(), CoreMatchers.equalTo("application/json"));
+            assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("application/json");
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
-        assertThat(response, CoreMatchers.equalTo("{\"message\": \"Roger admin!\"}"));
+        assertThat(response).isEqualTo("{\"message\": \"Roger admin!\"}");
     }
 
     @Test
@@ -160,7 +160,7 @@ public class EmbeddedHttpServerTest {
         httpPost.addHeader(HttpHeaders.AUTHORIZATION,
                 "Basic " + Base64.getEncoder().encodeToString("bill:wolf".getBytes(StandardCharsets.UTF_8)));
         httpClient.execute(httpPost, httpResponse -> {
-            assertThat(httpResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(401));
+            assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(401);
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
     }
@@ -176,9 +176,9 @@ public class EmbeddedHttpServerTest {
                 .addParameter("city", "H=mburg")
                 .build();
         String response = httpClient.execute(new HttpGet(uri), httpResponse -> {
-            assertThat(httpResponse.getStatusLine().getStatusCode(), CoreMatchers.equalTo(200));
+            assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(200);
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
-        assertThat(response, CoreMatchers.equalTo("No Andreas in Hamburg"));
+        assertThat(response).isEqualTo("No Andreas in Hamburg");
     }
 }
