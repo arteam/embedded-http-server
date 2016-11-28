@@ -14,6 +14,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.assertj.core.util.URLs;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,14 +52,14 @@ public class EmbeddedHttpServerTest {
                     response.setStatusCode(400);
                     return;
                 }
-                response.setBody("{\"message\": \"Roger that!\"}")
+                response.setBody(loadResource("roger_that.json"))
                         .addHeader("content-type", "application/json");
             })
             .addHandler("/error", ((request, response) -> response.setStatusCode(500)))
             .addHandler("/protected", (request, response) -> {
                 System.out.println(request);
                 assertThat(request.getContentType()).isEqualTo("application/json; charset=UTF-8");
-                response.setBody("{\"message\": \"Roger admin!\"}")
+                response.setBody(loadResource("roger_admin.json"))
                         .addHeader("content-type", "application/json");
             }, new BasicAuthenticator("tiny-http-server") {
                 @Override
@@ -68,6 +69,10 @@ public class EmbeddedHttpServerTest {
             });
 
     private CloseableHttpClient httpClient = HttpClients.createMinimal();
+
+    private static String loadResource(String resourcePath) {
+        return URLs.contentOf(EmbeddedHttpServer.class.getResource("/" + resourcePath), StandardCharsets.UTF_8);
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -109,7 +114,7 @@ public class EmbeddedHttpServerTest {
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("application/json");
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
-        assertThat(response).isEqualTo("{\"message\": \"Roger that!\"}");
+        assertThat(response).isEqualTo(loadResource("roger_that.json"));
     }
 
     @Test
@@ -150,7 +155,7 @@ public class EmbeddedHttpServerTest {
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("application/json");
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
-        assertThat(response).isEqualTo("{\"message\": \"Roger admin!\"}");
+        assertThat(response).isEqualTo(loadResource("roger_admin.json"));
     }
 
     @Test
