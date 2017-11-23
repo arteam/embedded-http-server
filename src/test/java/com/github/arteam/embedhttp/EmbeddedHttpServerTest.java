@@ -56,8 +56,7 @@ public class EmbeddedHttpServerTest {
                     response.setStatusCode(400);
                     return;
                 }
-                assertThat(request.getQueryParametersFromBody())
-                        .containsOnly(entry("name", "Andr&as"), entry("city", "H=mburg"));
+                assertThat(request.getBody()).isEqualTo("{\"name\":\"Hello, World!\"}");
                 response.setBody(loadResource("roger_that.json"))
                         .addHeader("content-type", "application/json");
             })
@@ -67,6 +66,9 @@ public class EmbeddedHttpServerTest {
                     response.setStatusCode(400);
                     return;
                 }
+
+                assertThat(request.getQueryParametersFromBody())
+                        .containsOnly(entry("name", "Andr&as"), entry("city", "H=mburg"));
                 response.setBody(loadResource("roger_that.json"))
                         .addHeader("content-type", "application/json");
             })
