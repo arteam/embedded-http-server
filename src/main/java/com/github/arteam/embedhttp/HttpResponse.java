@@ -33,10 +33,6 @@ public class HttpResponse {
         return this;
     }
 
-    public Headers getHeaders() {
-        return headers;
-    }
-
     public HttpResponse addHeader(String name, String value) {
         headers.add(name, value);
         return this;
