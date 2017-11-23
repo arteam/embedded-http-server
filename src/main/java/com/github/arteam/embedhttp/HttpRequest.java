@@ -72,16 +72,28 @@ public class HttpRequest {
     }
 
     /**
-     * Gets query parameters from the provided URI as a {@link Map}. The query parameters are
+     * Gets the query parameters from the request body as a {@link Map}. The query parameters are
+     * URI-encoded, and we should decode them when populating the map. In case we have several
+     * parameters with the same name, the last one wins.
+     */
+    public Map<String, String> getQueryParametersFromBody() {
+        return toMap(body);
+    }
+
+    /**
+     * Gets the query parameters from the provided URI as a {@link Map}. The query parameters are
      * URI-encoded, and we should decode them when populating the map. In case we have several
      * parameters with the same name, the last one wins.
      */
     private Map<String, String> getQueryParameters(URI uri) {
-        String rawQuery = uri.getRawQuery();
-        if (rawQuery == null || rawQuery.isEmpty()) {
+        return toMap(uri.getRawQuery());
+    }
+
+    private Map<String, String> toMap(String source) {
+        if (source == null || source.isEmpty()) {
             return Collections.emptyMap();
         }
-        return Stream.of(rawQuery.split("&"))
+        return Stream.of(source.split("&"))
                 .map(s -> s.split("="))
                 .collect(Collectors.toMap(p -> decodeUrlPart(p[0]), p -> decodeUrlPart(p[1]), (first, second) -> second));
     }

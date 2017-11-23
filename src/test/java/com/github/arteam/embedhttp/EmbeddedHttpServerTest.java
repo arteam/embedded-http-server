@@ -3,6 +3,7 @@ package com.github.arteam.embedhttp;
 import com.github.arteam.embedhttp.junit.EmbeddedHttpServerRule;
 import com.sun.net.httpserver.BasicAuthenticator;
 import org.apache.http.HttpHeaders;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -22,10 +23,13 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 
 /**
@@ -49,6 +53,17 @@ public class EmbeddedHttpServerTest {
             }).addHandler("/post", (request, response) -> {
                 System.out.println(request);
                 if (!request.getContentType().equals("application/json; charset=UTF-8")) {
+                    response.setStatusCode(400);
+                    return;
+                }
+                assertThat(request.getQueryParametersFromBody())
+                        .containsOnly(entry("name", "Andr&as"), entry("city", "H=mburg"));
+                response.setBody(loadResource("roger_that.json"))
+                        .addHeader("content-type", "application/json");
+            })
+            .addHandler("/post-parameters", (request, response) -> {
+                System.out.println(request);
+                if (!request.getContentType().equals("application/x-www-form-urlencoded; charset=UTF-8")) {
                     response.setStatusCode(400);
                     return;
                 }
@@ -110,6 +125,19 @@ public class EmbeddedHttpServerTest {
     public void testPost() throws Exception {
         HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/post", httpServer.getPort()));
         httpPost.setEntity(new StringEntity("{\"name\":\"Hello, World!\"}", ContentType.APPLICATION_JSON));
+        String response = httpClient.execute(httpPost, httpResponse -> {
+            assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("application/json");
+            return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
+        });
+        assertThat(response).isEqualTo(loadResource("roger_that.json"));
+    }
+
+    @Test
+    public void testPostEncodedParameters() throws Exception {
+        HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/post-parameters", httpServer.getPort()));
+        httpPost.setEntity(new UrlEncodedFormEntity(Arrays.asList(
+                new BasicNameValuePair("name", "Andr&as"),
+                new BasicNameValuePair("city", "H=mburg")), StandardCharsets.UTF_8));
         String response = httpClient.execute(httpPost, httpResponse -> {
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("application/json");
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
