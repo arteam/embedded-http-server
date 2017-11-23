@@ -59,12 +59,12 @@ public class HttpRequest {
         return headers;
     }
 
-    public String getFirstHeader(String key) {
+    public String getHeader(String key) {
         return headers.getFirst(key);
     }
 
     public String getContentType() {
-        return getFirstHeader("Content-Type");
+        return getHeader("Content-Type");
     }
 
     public String getBody() {
