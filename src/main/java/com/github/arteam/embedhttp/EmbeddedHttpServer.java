@@ -9,6 +9,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,8 +78,9 @@ public class EmbeddedHttpServer implements Closeable {
                     for (Map.Entry<String, List<String>> e : response.getHeaders().entrySet()) {
                         httpExchange.getResponseHeaders().put(e.getKey(), e.getValue());
                     }
-                    httpExchange.sendResponseHeaders(response.getStatusCode(), response.getBody().length());
-                    writeToStream(httpExchange.getResponseBody(), response.getBody());
+                    byte[] byteBody = response.getBody().getBytes(StandardCharsets.UTF_8);
+                    httpExchange.sendResponseHeaders(response.getStatusCode(), byteBody.length);
+                    httpExchange.getResponseBody().write(byteBody);
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
@@ -138,14 +140,6 @@ public class EmbeddedHttpServer implements Closeable {
         }
     }
 
-    /**
-     * Writes the provided string to the provided output steam in the UTF-8 encoding
-     */
-    private static void writeToStream(OutputStream outputStream, String result) throws IOException {
-        try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
-            writer.write(result);
-        }
-    }
 
     private static class HttpHandlerConfig {
 
