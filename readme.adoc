@@ -5,32 +5,37 @@ and quick startup time.
 
 ## Description
 
-`embedded-http-server` is a thin wrapper around `com.sun.net.HttpServer`. The latter server is
+`embedded-http-server` is a thin wrapper around `com.sun.net.HttpServer`. The Sun server is
 quite fast, provides a Java API for accessing requests/responses, and already shipped in
 the JDK. Unfortunately, its API is quite confusing, not documented and the server lacks
-error reporting. This project aims to solve these problems by providing a nice and functional
-API for scripting an HTTP server without sacrificing the server startup time.
+error reporting. This project aims to solve these issue by providing a nice and functional
+API for scripting the HTTP server without sacrificing the startup time.
 
 ## Application
 
-The primary use case is the unit-testing HTTP clients. Developers often need to fire up an
-HTTP server in tests to create a test double of a real remote system. That test double should
-be a rather quick, otherwise a developer lose the advantage of the quick turnaround time and
-eventually switch to testing on a "live" system. Also some people are concerned about
+The primary use case is unit-testing of HTTP clients. Developers often need to fire up an
+HTTP server in tests to create a test double for a remote system. That test double should
+be a rather quick, otherwise developers lose the advantage of the quick turnaround time and
+eventually switch to testing on a "live" system. Also, some people are opionated about
 including complex projects as external dependencies without a specific need to avoid bloating
 the classpath.
 
 ## Advantages
 
 The project is not tied to any external API and can be used with any HTTP client or framework.
-You can use it with: https://hc.apache.org/[Apache HTTP Client],
-https://github.com/square/okhttp[OkHTTP],
-https://jersey.java.net/documentation/latest/client.html[Jersey HTTP Client],
-http://docs.spring.io/spring/docs/4.0.x/javadoc-api/org/springframework/web/client/RestTemplate.html[Spring Rest Template],
-or even with http://docs.oracle.com/javase/8/docs/api/java/net/URLConnection.html[URLConnection].
+You can use it with: 
+
+* https://hc.apache.org/[Apache HTTP Client],
+* https://github.com/square/okhttp[OkHTTP],
+* https://jersey.java.net/documentation/latest/client.html[Jersey HTTP Client],
+* http://docs.spring.io/spring/docs/4.0.x/javadoc-api/org/springframework/web/client/RestTemplate.html[Spring Rest Template],
+* or even with http://docs.oracle.com/javase/8/docs/api/java/net/URLConnection.html[URLConnection].
 
 ## Alternatives
 
-If you need a real HTTP server for production systems, you should definitely use take a look at
-http://www.eclipse.org/jetty/[Jetty], https://tomcat.apache.org/[Tomcat], http://undertow.io/[Undertow],
-or http://netty.io/[Netty].
+If you need a real HTTP server for production systems, you should definitely take a look at
+
+* http://www.eclipse.org/jetty/[Jetty], 
+* https://tomcat.apache.org/[Tomcat], 
+* http://undertow.io/[Undertow],
+* or http://netty.io/[Netty].
