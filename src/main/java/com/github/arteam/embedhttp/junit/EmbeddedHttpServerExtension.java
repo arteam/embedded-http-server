@@ -3,7 +3,9 @@ package com.github.arteam.embedhttp.junit;
 import com.github.arteam.embedhttp.EmbeddedHttpServer;
 import com.github.arteam.embedhttp.HttpHandler;
 import com.sun.net.httpserver.Authenticator;
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -14,7 +16,7 @@ import java.net.InetSocketAddress;
  * @author Artem Prigoda
  * @since 23.09.16
  */
-public class EmbeddedHttpServerRule extends ExternalResource {
+public class EmbeddedHttpServerExtension implements BeforeEachCallback, AfterEachCallback {
 
     private EmbeddedHttpServer embeddedHttpServer = new EmbeddedHttpServer();
     private InetSocketAddress inetSocketAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
@@ -22,14 +24,14 @@ public class EmbeddedHttpServerRule extends ExternalResource {
     /**
      * Adds a new handler to the server to a path.
      */
-    public EmbeddedHttpServerRule addHandler(String path, HttpHandler handler) {
+    public EmbeddedHttpServerExtension addHandler(String path, HttpHandler handler) {
         return addHandler(path, handler, null);
     }
 
     /**
      * Adds a new handler to the server to a path with an authenticator.
      */
-    public EmbeddedHttpServerRule addHandler(String path, HttpHandler handler, Authenticator authenticator) {
+    public EmbeddedHttpServerExtension addHandler(String path, HttpHandler handler, Authenticator authenticator) {
         embeddedHttpServer.addHandler(path, handler, authenticator);
         return this;
     }
@@ -37,14 +39,14 @@ public class EmbeddedHttpServerRule extends ExternalResource {
     /**
      * Sets a port on which the server should start up
      */
-    public EmbeddedHttpServerRule withPort(int port) {
+    public EmbeddedHttpServerExtension withPort(int port) {
         return withAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), port));
     }
 
     /**
      * Sets an address on which the server should start up
      */
-    public EmbeddedHttpServerRule withAddress(InetSocketAddress inetSocketAddress) {
+    public EmbeddedHttpServerExtension withAddress(InetSocketAddress inetSocketAddress) {
         this.inetSocketAddress = inetSocketAddress;
         return this;
     }
@@ -63,13 +65,15 @@ public class EmbeddedHttpServerRule extends ExternalResource {
         return embeddedHttpServer.getBindHost();
     }
 
+
     @Override
-    protected void before() throws Throwable {
+    public void beforeEach(ExtensionContext context) throws Exception {
         embeddedHttpServer.start(inetSocketAddress);
     }
 
     @Override
-    protected void after() {
+    public void afterEach(ExtensionContext context) throws Exception {
         embeddedHttpServer.stop();
     }
+
 }
