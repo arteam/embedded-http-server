@@ -13,9 +13,6 @@ import java.util.stream.Stream;
 
 /**
  * Represents an HTTP request from an HTTP client
- *
- * @author Artem Prigoda
- * @since 05.06.16
  */
 public class HttpRequest {
 

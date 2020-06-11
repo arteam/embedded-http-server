@@ -13,10 +13,6 @@ import java.net.InetSocketAddress;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-/**
- * @author Artem Prigoda
- * @since 28.11.16
- */
 public class RunsOnSpecificAddress {
 
     @RegisterExtension

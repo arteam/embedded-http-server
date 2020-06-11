@@ -19,9 +19,6 @@ import java.util.Map;
  * Represents a simple HTTP server (a facade around {@link com.sun.net.httpserver.HttpServer for unit testing.
  * The server is started after invoking the {@link EmbeddedHttpServer#start()} method. It's a good practice
  * to shutdown it with {@link EmbeddedHttpServer#stop()} method.
- *
- * @author Artem Prigoda
- * @since 05.06.16
  */
 public class EmbeddedHttpServer implements Closeable {
 
