@@ -29,11 +29,6 @@ import java.util.Collections;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
-
-/**
- * @author Artem Prigoda
- * @since 05.06.16
- */
 public class EmbeddedHttpServerTest {
 
     @RegisterExtension

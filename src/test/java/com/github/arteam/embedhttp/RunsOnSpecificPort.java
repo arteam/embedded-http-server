@@ -11,11 +11,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
-/**
- * @author Artem Prigoda
- * @since 28.11.16
- */
 public class RunsOnSpecificPort {
 
     @RegisterExtension

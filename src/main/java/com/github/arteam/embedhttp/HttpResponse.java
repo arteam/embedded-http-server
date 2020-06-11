@@ -4,9 +4,6 @@ import com.sun.net.httpserver.Headers;
 
 /**
  * Represents an HTTP responses from an HTTP server
- *
- * @author Artem Prigoda
- * @since 05.06.16
  */
 public class HttpResponse {
 

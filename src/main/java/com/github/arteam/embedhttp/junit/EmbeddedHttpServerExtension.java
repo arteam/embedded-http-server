@@ -12,9 +12,6 @@ import java.net.InetSocketAddress;
 
 /**
  * A JUnit rule for starting up an HTTP server in tests.
- *
- * @author Artem Prigoda
- * @since 23.09.16
  */
 public class EmbeddedHttpServerExtension implements BeforeEachCallback, AfterEachCallback {
 
