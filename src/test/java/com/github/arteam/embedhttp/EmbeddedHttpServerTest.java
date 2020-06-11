@@ -32,41 +32,44 @@ import static org.assertj.core.api.Assertions.entry;
 public class EmbeddedHttpServerTest {
 
     @RegisterExtension
-    public EmbeddedHttpServerExtension httpServer = new EmbeddedHttpServerExtension().addHandler("/get", (request, response) -> {
-        System.out.println(request);
-        response.setBody("Hello, World!").addHeader("content-type", "text/plain");
-    }).addHandler("/search", (request, response) -> {
-        System.out.println(request);
-        assertThat(request.getQueryParameter("name")).isEqualTo("Andr&as");
-        assertThat(request.getQueryParameter("city")).isEqualTo("H=mburg");
-        response.setBody("No Andreas in Hamburg").addHeader("content-type", "text/plain");
-    }).addHandler("/post", (request, response) -> {
-        System.out.println(request);
-        if (!request.getContentType().equals("application/json; charset=UTF-8")) {
-            response.setStatusCode(400);
-            return;
-        }
-        assertThat(request.getBody()).isEqualTo("{\"name\":\"Hello, World!\"}");
-        response.setBody(loadResource("roger_that.json")).addHeader("content-type", "application/json");
-    }).addHandler("/post-parameters", (request, response) -> {
-        System.out.println(request);
-        if (!request.getContentType().equals("application/x-www-form-urlencoded; charset=UTF-8")) {
-            response.setStatusCode(400);
-            return;
-        }
-
-        assertThat(request.getQueryParametersFromBody()).containsOnly(entry("name", "Andr&as"), entry("city", "H=mburg"));
-        response.setBody(loadResource("roger_that.json")).addHeader("content-type", "application/json");
-    }).addHandler("/error", ((request, response) -> response.setStatusCode(500))).addHandler("/protected", (request, response) -> {
-        System.out.println(request);
-        assertThat(request.getContentType()).isEqualTo("application/json; charset=UTF-8");
-        response.setBody(loadResource("roger_admin.json")).addHeader("content-type", "application/json");
-    }, new BasicAuthenticator("tiny-http-server") {
-        @Override
-        public boolean checkCredentials(String username, String password) {
-            return username.equals("scott") && password.equals("tiger");
-        }
-    });
+    public EmbeddedHttpServerExtension httpServer = new EmbeddedHttpServerExtension()
+            .addHandler("/get", (request, response) -> {
+                System.out.println(request);
+                response.setBody("Hello, World!").addHeader("content-type", "text/plain");
+            }).addHandler("/search", (request, response) -> {
+                System.out.println(request);
+                assertThat(request.getQueryParameter("name")).isEqualTo("Andr&as");
+                assertThat(request.getQueryParameter("city")).isEqualTo("H=mburg");
+                response.setBody("No Andreas in Hamburg").addHeader("content-type", "text/plain");
+            }).addHandler("/post", (request, response) -> {
+                System.out.println(request);
+                if (!request.getContentType().equals("application/json; charset=UTF-8")) {
+                    response.setStatusCode(400);
+                    return;
+                }
+                assertThat(request.getBody()).isEqualTo("{\"name\":\"Hello, World!\"}");
+                response.setBody(loadResource("roger_that.json"))
+                        .addHeader("content-type", "application/json");
+            }).addHandler("/post-parameters", (request, response) -> {
+                System.out.println(request);
+                if (!request.getContentType().equals("application/x-www-form-urlencoded; charset=UTF-8")) {
+                    response.setStatusCode(400);
+                    return;
+                }
+                assertThat(request.getQueryParametersFromBody()).containsOnly(entry("name", "Andr&as"), entry("city", "H=mburg"));
+                response.setBody(loadResource("roger_that.json")).addHeader("content-type", "application/json");
+            }).addHandler("/error", ((request, response) -> {
+                response.setStatusCode(500);
+            })).addHandler("/protected", (request, response) -> {
+                System.out.println(request);
+                assertThat(request.getContentType()).isEqualTo("application/json; charset=UTF-8");
+                response.setBody(loadResource("roger_admin.json")).addHeader("content-type", "application/json");
+            }, new BasicAuthenticator("tiny-http-server") {
+                @Override
+                public boolean checkCredentials(String username, String password) {
+                    return username.equals("scott") && password.equals("tiger");
+                }
+            });
 
     private CloseableHttpClient httpClient = HttpClients.createMinimal();
 
@@ -121,7 +124,7 @@ public class EmbeddedHttpServerTest {
     void testPostEncodedParameters() throws Exception {
         HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/post-parameters", httpServer.getPort()));
         httpPost.setEntity(new UrlEncodedFormEntity(Arrays.asList(new BasicNameValuePair("name", "Andr&as"), new BasicNameValuePair("city", "H=mburg")),
-                                                    StandardCharsets.UTF_8));
+                StandardCharsets.UTF_8));
         String response = httpClient.execute(httpPost, httpResponse -> {
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("application/json");
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
@@ -182,12 +185,12 @@ public class EmbeddedHttpServerTest {
     @Test
     void testQueryParameters() throws Exception {
         URI uri = new URIBuilder().setScheme("http")
-                                  .setHost("127.0.0.1")
-                                  .setPort(httpServer.getPort())
-                                  .setPath("/search")
-                                  .addParameter("name", "Andr&as")
-                                  .addParameter("city", "H=mburg")
-                                  .build();
+                .setHost("127.0.0.1")
+                .setPort(httpServer.getPort())
+                .setPath("/search")
+                .addParameter("name", "Andr&as")
+                .addParameter("city", "H=mburg")
+                .build();
         String response = httpClient.execute(new HttpGet(uri), httpResponse -> {
             assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(200);
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
