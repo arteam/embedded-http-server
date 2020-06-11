@@ -96,11 +96,7 @@ public class HttpRequest {
     }
 
     private static String decodeUrlPart(String encodedPart) {
-        try {
-            return URLDecoder.decode(encodedPart, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError(e);
-        }
+        return URLDecoder.decode(encodedPart, StandardCharsets.UTF_8);
     }
 
     @Override
