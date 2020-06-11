@@ -125,18 +125,8 @@ public class EmbeddedHttpServer implements Closeable {
      * Reads the provided input stream to a string in the UTF-8 encoding
      */
     private static String readFromStream(InputStream inputStream) throws IOException {
-        try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-            StringBuilder stringBuilder = new StringBuilder();
-            CharBuffer readBuffer = CharBuffer.allocate(1024);
-            while (reader.read(readBuffer) != -1) {
-                readBuffer.flip();
-                stringBuilder.append(readBuffer);
-                readBuffer.clear();
-            }
-            return stringBuilder.toString();
-        }
+        return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
     }
-
 
     private static class HttpHandlerConfig {
 
