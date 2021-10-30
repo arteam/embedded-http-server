@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
@@ -74,7 +75,8 @@ public class EmbeddedHttpServerTest {
     private final CloseableHttpClient httpClient = HttpClients.createMinimal();
 
     private static String loadResource(String resourcePath) {
-        return URLs.contentOf(EmbeddedHttpServer.class.getResource("/" + resourcePath), StandardCharsets.UTF_8);
+        return URLs.contentOf(Objects.requireNonNull(EmbeddedHttpServer.class.getResource("/" + resourcePath)),
+                StandardCharsets.UTF_8);
     }
 
     @BeforeEach
