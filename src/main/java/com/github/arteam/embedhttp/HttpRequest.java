@@ -100,11 +100,12 @@ public class HttpRequest {
 
     @Override
     public String toString() {
-        return "HttpRequest{" + "method='" + method + '\'' +
+        return "HttpRequest{" +
+                "method='" + method + '\'' +
                 ", uri=" + uri +
                 ", queryParameters=" + queryParameters +
                 ", protocolVersion='" + protocolVersion + '\'' +
-                ", headers=" + headers.entrySet() +
+                ", headers=" + headers +
                 ", body='" + body + '\'' +
                 '}';
     }
