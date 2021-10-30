@@ -5,11 +5,11 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpServer;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +66,7 @@ public class EmbeddedHttpServer implements Closeable {
 
         for (HttpHandlerConfig config : handlers) {
             HttpContext context = sunHttpServer.createContext(config.path, httpExchange -> {
-                try (httpExchange) {
+                try {
                     Headers requestHeaders = httpExchange.getRequestHeaders();
                     HttpResponse response = new HttpResponse();
                     config.httpHandler.handle(new HttpRequest(httpExchange.getRequestMethod(),
@@ -80,6 +80,8 @@ public class EmbeddedHttpServer implements Closeable {
                     httpExchange.getResponseBody().write(byteBody);
                 } catch (Exception e) {
                     e.printStackTrace();
+                } finally {
+                    httpExchange.close();
                 }
             });
             if (config.authenticator != null) {
