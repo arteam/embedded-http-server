@@ -71,7 +71,7 @@ public class EmbeddedHttpServerTest {
                 }
             });
 
-    private CloseableHttpClient httpClient = HttpClients.createMinimal();
+    private final CloseableHttpClient httpClient = HttpClients.createMinimal();
 
     private static String loadResource(String resourcePath) {
         return URLs.contentOf(EmbeddedHttpServer.class.getResource("/" + resourcePath), StandardCharsets.UTF_8);
