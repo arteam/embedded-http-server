@@ -7,12 +7,14 @@ import com.sun.net.httpserver.Headers;
  */
 public class HttpResponse {
 
+    private static final int STATUS_CODE_OK = 200;
+
     private int statusCode;
     private Headers headers;
     private String body;
 
     public HttpResponse() {
-        this(200, new Headers(), "");
+        this(STATUS_CODE_OK, new Headers(), "");
     }
 
     public HttpResponse(int statusCode, Headers headers, String body) {
