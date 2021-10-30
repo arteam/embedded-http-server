@@ -15,7 +15,7 @@ import java.net.InetSocketAddress;
  */
 public class EmbeddedHttpServerExtension implements BeforeEachCallback, AfterEachCallback {
 
-    private EmbeddedHttpServer embeddedHttpServer = new EmbeddedHttpServer();
+    private final EmbeddedHttpServer embeddedHttpServer = new EmbeddedHttpServer();
     private InetSocketAddress inetSocketAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
 
     /**
