@@ -2,14 +2,13 @@ package com.github.arteam.embedhttp;
 
 import com.sun.net.httpserver.Headers;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Represents an HTTP request from an HTTP client
@@ -90,7 +89,7 @@ public class HttpRequest {
         if (source == null || source.isEmpty()) {
             return Collections.emptyMap();
         }
-        return Stream.of(source.split("&"))
+        return Arrays.stream(source.split("&"))
                 .map(s -> s.split("="))
                 .collect(Collectors.toMap(p -> decodeUrlPart(p[0]), p -> decodeUrlPart(p[1]), (first, second) -> second));
     }
