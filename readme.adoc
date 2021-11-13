@@ -1,9 +1,9 @@
 # Embedded HTTP server
 
-`embedded-http-server` is a light and minimalistic HTTP server for Java with zero dependencies
+`embedded-http-server` is a light and minimalistic Java HTTP server with zero dependencies
 and quick startup time.
 
-## Usage
+## Maven
 
 ```xml
 <dependency>
@@ -15,26 +15,27 @@ and quick startup time.
 
 ## Description
 
-`embedded-http-server` is a thin wrapper around `com.sun.net.HttpServer`. The Sun server is
-quite fast, provides a Java API for accessing requests/responses, and already shipped in
-the JDK. Unfortunately, its API is quite confusing, not documented and the server lacks
-error reporting. This project aims to solve these issue by providing a nice and functional
-API for scripting the HTTP server without sacrificing the startup time.
+`embedded-http-server` is a thin wrapper around `com.sun.net.HttpServer`. The internal Sun server is
+quite fast, provides a Java API for accessing requests/responses and already shipped in
+the JDK. Unfortunately, the API is quite confusing, not documented and the server lacks
+error reporting. This library tries to solve these issues by providing a nice and functional
+API for scripting an HTTP server without a long startup time.
 
 ## Application
 
-The primary use case is unit-testing of HTTP clients. Developers often need to fire up an
-HTTP server in tests to create a test double for a remote system. That test double should
-be a rather quick, otherwise developers lose the advantage of the quick turnaround time and
-eventually switch to testing on a "live" system. Also, some people are opionated about
-including complex projects as external dependencies without a specific need to avoid bloating
-the classpath.
+The primary use case is integration testing of HTTP clients. You often need to fire up an
+HTTP server in tests to create a test double for a remote HTTP server. That test double should
+ideally be rather fast, otherwise you lose the advantage of the quick turnaround time and
+eventually switch to testing on a "live" system. Some people are also opionated about
+including huge projects as external dependencies without a specific need and want to avoid 
+bloating the classpath.
 
 ## Advantages
 
 The project is not tied to any external API and can be used with any HTTP client or framework.
-You can use it with: 
+You can use it with any HTTP client you like: 
 
+* https://openjdk.java.net/groups/net/httpclient/intro.html [Java11 HTTP Client]
 * https://hc.apache.org/[Apache HTTP Client],
 * https://github.com/square/okhttp[OkHTTP],
 * https://jersey.java.net/documentation/latest/client.html[Jersey HTTP Client],
@@ -43,7 +44,7 @@ You can use it with:
 
 ## Alternatives
 
-If you need a real HTTP server for production systems, you should definitely take a look at
+If you need a real HTTP server for serving a production worload, you should definitely take a look at
 
 * http://www.eclipse.org/jetty/[Jetty], 
 * https://tomcat.apache.org/[Tomcat], 
