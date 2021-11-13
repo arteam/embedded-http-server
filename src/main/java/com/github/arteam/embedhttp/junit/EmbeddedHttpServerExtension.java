@@ -67,7 +67,6 @@ public class EmbeddedHttpServerExtension implements BeforeEachCallback, AfterEac
         return embeddedHttpServer.getBindHost();
     }
 
-
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
         embeddedHttpServer.start(inetSocketAddress);
@@ -78,8 +77,14 @@ public class EmbeddedHttpServerExtension implements BeforeEachCallback, AfterEac
         embeddedHttpServer.stop();
     }
 
+    /**
+     * Loads a resource from the classpath by its full path
+     *
+     * @param resourcePath the path to the resource starting from `/`
+     * @return the resource as a string
+     */
     public static String loadResource(String resourcePath) {
-        try (InputStream is = requireNonNull(HttpHandler.class.getResourceAsStream(resourcePath),
+        try (InputStream is = requireNonNull(EmbeddedHttpServerExtension.class.getResourceAsStream(resourcePath),
                 "Unable to find resource at " + resourcePath)) {
             return new String(is.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
