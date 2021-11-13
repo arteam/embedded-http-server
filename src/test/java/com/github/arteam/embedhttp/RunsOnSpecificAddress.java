@@ -21,7 +21,7 @@ public class RunsOnSpecificAddress {
             .addHandler("/bye", (request, response) -> response.setBody("Bye, bye.")
                     .addHeader("content-type", "text/plain"));
 
-    private CloseableHttpClient httpClient = HttpClients.createMinimal();
+    private final CloseableHttpClient httpClient = HttpClients.createMinimal();
 
     @AfterEach
     void tearDown() throws Exception {
