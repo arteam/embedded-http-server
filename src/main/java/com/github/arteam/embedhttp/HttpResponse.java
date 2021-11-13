@@ -59,7 +59,7 @@ public class HttpResponse {
     public String toString() {
         return "HttpResponse{" +
                 "statusCode=" + statusCode +
-                ", headers=" + headers +
+                ", headers=" + headers.entrySet() +
                 ", body='" + body + '\'' +
                 '}';
     }
