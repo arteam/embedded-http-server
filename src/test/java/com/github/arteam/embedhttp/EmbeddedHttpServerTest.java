@@ -11,11 +11,9 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.assertj.core.util.URLs;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -72,7 +70,8 @@ public class EmbeddedHttpServerTest {
                 }
             });
 
-    private final CloseableHttpClient httpClient = HttpClients.createMinimal();
+    @RegisterExtension
+    public HttpClientExtension httpClientExtension = new HttpClientExtension();
 
     private static String loadResource(String resourcePath) {
         return URLs.contentOf(Objects.requireNonNull(EmbeddedHttpServer.class.getResource("/" + resourcePath)),
@@ -85,20 +84,16 @@ public class EmbeddedHttpServerTest {
         System.out.println("Server host is: " + httpServer.getBindHost());
     }
 
-    @AfterEach
-    void tearDown() throws Exception {
-        httpClient.close();
-    }
 
     @Test
     void testHelloWorld() throws Exception {
-        assertGetHelloWorld(httpClient);
+        assertGetHelloWorld(httpClientExtension.get());
     }
 
     @Test
     void testSeveralHelloWorlds() throws Exception {
         for (int i = 0; i < 10; i++) {
-            assertGetHelloWorld(httpClient);
+            assertGetHelloWorld(httpClientExtension.get());
         }
     }
 
@@ -115,7 +110,7 @@ public class EmbeddedHttpServerTest {
     void testPost() throws Exception {
         HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/post", httpServer.getPort()));
         httpPost.setEntity(new StringEntity("{\"name\":\"Hello, World!\"}", ContentType.APPLICATION_JSON));
-        String response = httpClient.execute(httpPost, httpResponse -> {
+        String response = httpClientExtension.get().execute(httpPost, httpResponse -> {
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("application/json");
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
@@ -125,9 +120,11 @@ public class EmbeddedHttpServerTest {
     @Test
     void testPostEncodedParameters() throws Exception {
         HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/post-parameters", httpServer.getPort()));
-        httpPost.setEntity(new UrlEncodedFormEntity(Arrays.asList(new BasicNameValuePair("name", "Andr&as"), new BasicNameValuePair("city", "H=mburg")),
+        httpPost.setEntity(new UrlEncodedFormEntity(Arrays.asList(
+                new BasicNameValuePair("name", "Andr&as"),
+                new BasicNameValuePair("city", "H=mburg")),
                 StandardCharsets.UTF_8));
-        String response = httpClient.execute(httpPost, httpResponse -> {
+        String response = httpClientExtension.get().execute(httpPost, httpResponse -> {
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("application/json");
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
@@ -137,8 +134,9 @@ public class EmbeddedHttpServerTest {
     @Test
     void testBadRequest() throws Exception {
         HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/post", httpServer.getPort()));
-        httpPost.setEntity(new UrlEncodedFormEntity(Collections.singletonList(new BasicNameValuePair("greeting", "Hello, World!"))));
-        try (CloseableHttpResponse httpResponse = httpClient.execute(httpPost);) {
+        httpPost.setEntity(new UrlEncodedFormEntity(Collections.singletonList(
+                new BasicNameValuePair("greeting", "Hello, World!"))));
+        try (CloseableHttpResponse httpResponse = httpClientExtension.get().execute(httpPost)) {
             assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(400);
         }
     }
@@ -147,7 +145,7 @@ public class EmbeddedHttpServerTest {
     void testWrongPath() throws Exception {
         HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/dead_letter", httpServer.getPort()));
         httpPost.setEntity(new StringEntity("{\"name\":\"Hello, World!\"}", ContentType.APPLICATION_JSON));
-        try (CloseableHttpResponse httpResponse = httpClient.execute(httpPost);) {
+        try (CloseableHttpResponse httpResponse = httpClientExtension.get().execute(httpPost)) {
             assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(404);
         }
     }
@@ -156,7 +154,7 @@ public class EmbeddedHttpServerTest {
     void testServerError() throws Exception {
         HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/error", httpServer.getPort()));
         httpPost.setEntity(new StringEntity("{\"name\":\"Hello, World!\"}", ContentType.APPLICATION_JSON));
-        try (CloseableHttpResponse httpResponse = httpClient.execute(httpPost);) {
+        try (CloseableHttpResponse httpResponse = httpClientExtension.get().execute(httpPost)) {
             assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(500);
         }
     }
@@ -165,8 +163,9 @@ public class EmbeddedHttpServerTest {
     void testAuth() throws Exception {
         HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/protected", httpServer.getPort()));
         httpPost.setEntity(new StringEntity("{\"name\":\"I am the admin!\"}", ContentType.APPLICATION_JSON));
-        httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString("scott:tiger".getBytes(StandardCharsets.UTF_8)));
-        String response = httpClient.execute(httpPost, httpResponse -> {
+        httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Basic " +
+                Base64.getEncoder().encodeToString("scott:tiger".getBytes(StandardCharsets.UTF_8)));
+        String response = httpClientExtension.get().execute(httpPost, httpResponse -> {
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("application/json");
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
@@ -177,8 +176,9 @@ public class EmbeddedHttpServerTest {
     void testNotAuthorized() throws Exception {
         HttpPost httpPost = new HttpPost(String.format("http://127.0.0.1:%s/protected", httpServer.getPort()));
         httpPost.setEntity(new StringEntity("{\"name\":\"I am the admin!\"}", ContentType.APPLICATION_JSON));
-        httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString("bill:wolf".getBytes(StandardCharsets.UTF_8)));
-        httpClient.execute(httpPost, httpResponse -> {
+        httpPost.addHeader(HttpHeaders.AUTHORIZATION, "Basic " +
+                Base64.getEncoder().encodeToString("bill:wolf".getBytes(StandardCharsets.UTF_8)));
+        httpClientExtension.get().execute(httpPost, httpResponse -> {
             assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(401);
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
@@ -193,7 +193,7 @@ public class EmbeddedHttpServerTest {
                 .addParameter("name", "Andr&as")
                 .addParameter("city", "H=mburg")
                 .build();
-        String response = httpClient.execute(new HttpGet(uri), httpResponse -> {
+        String response = httpClientExtension.get().execute(new HttpGet(uri), httpResponse -> {
             assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(200);
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });

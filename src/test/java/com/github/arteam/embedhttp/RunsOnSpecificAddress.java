@@ -2,10 +2,7 @@ package com.github.arteam.embedhttp;
 
 import com.github.arteam.embedhttp.junit.EmbeddedHttpServerExtension;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -21,17 +18,13 @@ public class RunsOnSpecificAddress {
             .addHandler("/bye", (request, response) -> response.setBody("Bye, bye.")
                     .addHeader("content-type", "text/plain"));
 
-    private final CloseableHttpClient httpClient = HttpClients.createMinimal();
-
-    @AfterEach
-    void tearDown() throws Exception {
-        httpClient.close();
-    }
+    @RegisterExtension
+    public HttpClientExtension httpClientExtension = new HttpClientExtension();
 
     @Test
     void test() throws Exception {
         HttpGet httpGet = new HttpGet("http://127.0.0.1:13456/bye");
-        String response = httpClient.execute(httpGet, httpResponse -> {
+        String response = httpClientExtension.get().execute(httpGet, httpResponse -> {
             assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(200);
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("text/plain");
             return EntityUtils.toString(httpResponse.getEntity());
