@@ -105,7 +105,7 @@ public class HttpRequest {
                 ", uri=" + uri +
                 ", queryParameters=" + queryParameters +
                 ", protocolVersion='" + protocolVersion + '\'' +
-                ", headers=" + headers +
+                ", headers=" + headers.entrySet() +
                 ", body='" + body + '\'' +
                 '}';
     }
