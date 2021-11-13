@@ -5,11 +5,11 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpServer;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +78,7 @@ public class EmbeddedHttpServer implements Closeable {
                     byte[] byteBody = response.getBody().getBytes(StandardCharsets.UTF_8);
                     httpExchange.sendResponseHeaders(response.getStatusCode(), byteBody.length);
                     httpExchange.getResponseBody().write(byteBody);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
                     httpExchange.close();
