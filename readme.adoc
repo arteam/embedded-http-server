@@ -3,6 +3,16 @@
 `embedded-http-server` is a light and minimalistic HTTP server for Java with zero dependencies
 and quick startup time.
 
+## Usage
+
+```xml
+<dependency>
+    <groupId>com.github.arteam</groupId>
+    <artifactId>embedded-http-server</artifactId>
+    <version>1.1</version>
+</dependency>
+```
+
 ## Description
 
 `embedded-http-server` is a thin wrapper around `com.sun.net.HttpServer`. The Sun server is
