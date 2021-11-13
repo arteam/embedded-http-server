@@ -14,4 +14,5 @@ public interface HttpHandler {
      * Handles an HTTP request and builds an HTTP response.
      */
     void handle(HttpRequest request, HttpResponse response) throws IOException;
+
 }

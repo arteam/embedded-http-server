@@ -7,8 +7,13 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * A JUnit rule for starting up an HTTP server in tests.
@@ -73,4 +78,12 @@ public class EmbeddedHttpServerExtension implements BeforeEachCallback, AfterEac
         embeddedHttpServer.stop();
     }
 
+    public static String loadResource(String resourcePath) {
+        try (InputStream is = requireNonNull(HttpHandler.class.getResourceAsStream(resourcePath),
+                "Unable to find resource at " + resourcePath)) {
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Unable to read resource at " + resourcePath, e);
+        }
+    }
 }

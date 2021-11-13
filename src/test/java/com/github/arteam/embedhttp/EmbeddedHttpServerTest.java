@@ -13,7 +13,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.assertj.core.util.URLs;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -23,8 +22,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.Objects;
 
+import static com.github.arteam.embedhttp.junit.EmbeddedHttpServerExtension.loadResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
@@ -47,7 +46,7 @@ public class EmbeddedHttpServerTest {
                     return;
                 }
                 assertThat(request.getBody()).isEqualTo("{\"name\":\"Hello, World!\"}");
-                response.setBody(loadResource("roger_that.json"))
+                response.setBody(loadResource("/roger_that.json"))
                         .addHeader("content-type", "application/json");
             }).addHandler("/post-parameters", (request, response) -> {
                 System.out.println(request);
@@ -56,13 +55,13 @@ public class EmbeddedHttpServerTest {
                     return;
                 }
                 assertThat(request.getQueryParametersFromBody()).containsOnly(entry("name", "Andr&as"), entry("city", "H=mburg"));
-                response.setBody(loadResource("roger_that.json")).addHeader("content-type", "application/json");
+                response.setBody(loadResource("/roger_that.json")).addHeader("content-type", "application/json");
             }).addHandler("/error", ((request, response) -> {
                 response.setStatusCode(500);
             })).addHandler("/protected", (request, response) -> {
                 System.out.println(request);
                 assertThat(request.getContentType()).isEqualTo("application/json; charset=UTF-8");
-                response.setBody(loadResource("roger_admin.json")).addHeader("content-type", "application/json");
+                response.setBody(loadResource("/roger_admin.json")).addHeader("content-type", "application/json");
             }, new BasicAuthenticator("tiny-http-server") {
                 @Override
                 public boolean checkCredentials(String username, String password) {
@@ -72,11 +71,6 @@ public class EmbeddedHttpServerTest {
 
     @RegisterExtension
     public HttpClientExtension httpClientExtension = new HttpClientExtension();
-
-    private static String loadResource(String resourcePath) {
-        return URLs.contentOf(Objects.requireNonNull(EmbeddedHttpServer.class.getResource("/" + resourcePath)),
-                StandardCharsets.UTF_8);
-    }
 
     @BeforeEach
     void setUp() throws Exception {
@@ -114,7 +108,7 @@ public class EmbeddedHttpServerTest {
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("application/json");
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
-        assertThat(response).isEqualTo(loadResource("roger_that.json"));
+        assertThat(response).isEqualTo(loadResource("/roger_that.json"));
     }
 
     @Test
@@ -128,7 +122,7 @@ public class EmbeddedHttpServerTest {
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("application/json");
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
-        assertThat(response).isEqualTo(loadResource("roger_that.json"));
+        assertThat(response).isEqualTo(loadResource("/roger_that.json"));
     }
 
     @Test
@@ -169,7 +163,7 @@ public class EmbeddedHttpServerTest {
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("application/json");
             return EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
         });
-        assertThat(response).isEqualTo(loadResource("roger_admin.json"));
+        assertThat(response).isEqualTo(loadResource("/roger_admin.json"));
     }
 
     @Test
