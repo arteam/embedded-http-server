@@ -19,7 +19,7 @@ public class RunsOnSpecificPort {
             .addHandler("/hello", (request, response) -> response.setBody("Hello, World!")
                     .addHeader("content-type", "text/plain"));
 
-    private CloseableHttpClient httpClient = HttpClients.createMinimal();
+    private final CloseableHttpClient httpClient = HttpClients.createMinimal();
 
     @AfterEach
     void tearDown() throws Exception {

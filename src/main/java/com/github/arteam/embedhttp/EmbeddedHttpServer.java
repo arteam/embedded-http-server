@@ -23,7 +23,7 @@ import java.util.Map;
 public class EmbeddedHttpServer implements Closeable {
 
     private HttpServer sunHttpServer;
-    private List<HttpHandlerConfig> handlers = new ArrayList<>();
+    private final List<HttpHandlerConfig> handlers = new ArrayList<>();
 
     /**
      * Adds a new handler to the server to a path.
