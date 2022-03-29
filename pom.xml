@@ -4,7 +4,7 @@
 
     <groupId>com.github.arteam</groupId>
     <artifactId>embedded-http-server</artifactId>
-    <version>1.2</version>
+    <version>1.3-SNAPSHOT</version>
     <name>Embedded HTTP server</name>
     <description>A light and minimalistic HTTP server for Java with zero dependencies
         and quick startup time.
@@ -17,7 +17,7 @@
     <scm>
         <developerConnection>scm:git:git@github.com:arteam/embedded-http-server.git</developerConnection>
         <url>https://github.com/arteam/embedded-http-server</url>
-        <tag>embedded-http-server-1.2</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <url>https://github.com/arteam/embedded-http-server</url>
