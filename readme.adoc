@@ -9,7 +9,7 @@ and quick startup time.
 <dependency>
     <groupId>com.github.arteam</groupId>
     <artifactId>embedded-http-server</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
 </dependency>
 ```
 
