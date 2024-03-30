@@ -14,10 +14,10 @@ public class RunsOnSpecificAddressTest {
 
     @RegisterExtension
     public EmbeddedHttpServerExtension httpServerExtension = new EmbeddedHttpServerExtension()
-            .withAddress(new InetSocketAddress("0.0.0.0", 13456))
-            .addHandler("/bye", (request, response) -> response
-                    .setBody("Bye, bye.")
-                    .addHeader("content-type", "text/plain"));
+            .address(new InetSocketAddress("0.0.0.0", 13456))
+            .handler("/bye", (request, response) -> response
+                    .body("Bye, bye.")
+                    .header("content-type", "text/plain"));
 
     @RegisterExtension
     public HttpClientExtension httpClientExtension = new HttpClientExtension();

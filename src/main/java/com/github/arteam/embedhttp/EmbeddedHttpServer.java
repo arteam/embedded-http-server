@@ -72,10 +72,10 @@ public class EmbeddedHttpServer implements Closeable {
                     config.httpHandler.handle(new HttpRequest(httpExchange.getRequestMethod(),
                             httpExchange.getRequestURI(), httpExchange.getProtocol(), requestHeaders,
                             readFromStream(httpExchange.getRequestBody())), response);
-                    for (Map.Entry<String, List<String>> e : response.getHeaders().entrySet()) {
+                    for (Map.Entry<String, List<String>> e : response.headers().entrySet()) {
                         httpExchange.getResponseHeaders().put(e.getKey(), e.getValue());
                     }
-                    byte[] byteBody = response.getBody().getBytes(StandardCharsets.UTF_8);
+                    byte[] byteBody = response.body().getBytes(StandardCharsets.UTF_8);
                     httpExchange.sendResponseHeaders(response.getStatusCode(), byteBody.length);
                     httpExchange.getResponseBody().write(byteBody);
                 } catch (IOException e) {

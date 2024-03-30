@@ -27,30 +27,30 @@ public class HttpResponse {
         return statusCode;
     }
 
-    public HttpResponse setStatusCode(int statusCode) {
+    public HttpResponse statusCode(int statusCode) {
         this.statusCode = statusCode;
         return this;
     }
 
-    Headers getHeaders() {
+    Headers headers() {
         return headers;
     }
 
-    public HttpResponse addHeader(String name, String value) {
+    public HttpResponse header(String name, String value) {
         headers.add(name, value);
         return this;
     }
 
-    public HttpResponse setHeaders(Headers headers) {
+    public HttpResponse headers(Headers headers) {
         this.headers = headers;
         return this;
     }
 
-    public String getBody() {
+    public String body() {
         return body;
     }
 
-    public HttpResponse setBody(String body) {
+    public HttpResponse body(String body) {
         this.body = body;
         return this;
     }

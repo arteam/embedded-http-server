@@ -26,14 +26,14 @@ public class EmbeddedHttpServerExtension implements BeforeEachCallback, AfterEac
     /**
      * Adds a new handler to the server to a path.
      */
-    public EmbeddedHttpServerExtension addHandler(String path, HttpHandler handler) {
-        return addHandler(path, handler, null);
+    public EmbeddedHttpServerExtension handler(String path, HttpHandler handler) {
+        return handler(path, handler, null);
     }
 
     /**
      * Adds a new handler to the server to a path with an authenticator.
      */
-    public EmbeddedHttpServerExtension addHandler(String path, HttpHandler handler, Authenticator authenticator) {
+    public EmbeddedHttpServerExtension handler(String path, HttpHandler handler, Authenticator authenticator) {
         embeddedHttpServer.addHandler(path, handler, authenticator);
         return this;
     }
@@ -41,14 +41,14 @@ public class EmbeddedHttpServerExtension implements BeforeEachCallback, AfterEac
     /**
      * Sets a port on which the server should start up
      */
-    public EmbeddedHttpServerExtension withPort(int port) {
-        return withAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), port));
+    public EmbeddedHttpServerExtension port(int port) {
+        return address(new InetSocketAddress(InetAddress.getLoopbackAddress(), port));
     }
 
     /**
      * Sets an address on which the server should start up
      */
-    public EmbeddedHttpServerExtension withAddress(InetSocketAddress inetSocketAddress) {
+    public EmbeddedHttpServerExtension address(InetSocketAddress inetSocketAddress) {
         this.inetSocketAddress = inetSocketAddress;
         return this;
     }
@@ -56,14 +56,14 @@ public class EmbeddedHttpServerExtension implements BeforeEachCallback, AfterEac
     /**
      * Gets the port on which server has been started
      */
-    public int getPort() {
+    public int port() {
         return embeddedHttpServer.getPort();
     }
 
     /**
      * Gets the host on which server has been bound
      */
-    public String getBindHost() {
+    public String bindHost() {
         return embeddedHttpServer.getBindHost();
     }
 

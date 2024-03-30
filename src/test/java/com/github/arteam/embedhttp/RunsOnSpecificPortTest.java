@@ -12,9 +12,10 @@ public class RunsOnSpecificPortTest {
 
     @RegisterExtension
     public EmbeddedHttpServerExtension httpServerExtension = new EmbeddedHttpServerExtension()
-            .withPort(15678)
-            .addHandler("/hello", (request, response) -> response.setBody("Hello, World!")
-                    .addHeader("content-type", "text/plain"));
+            .port(15678)
+            .handler("/hello", (request, response) -> response
+                    .body("Hello, World!")
+                    .header("content-type", "text/plain"));
 
     @RegisterExtension
     public HttpClientExtension httpClientExtension = new HttpClientExtension();

@@ -28,42 +28,42 @@ public class HttpRequest {
         this.protocolVersion = protocolVersion;
         this.headers = headers;
         this.body = body;
-        this.queryParameters = getQueryParameters(uri);
+        this.queryParameters = queryParameters(uri);
     }
 
-    public String getMethod() {
+    public String method() {
         return method;
     }
 
-    public URI getUri() {
+    public URI uri() {
         return uri;
     }
 
-    public Map<String, String> getQueryParameters() {
+    public Map<String, String> queryParameters() {
         return queryParameters;
     }
 
-    public String getQueryParameter(String name) {
+    public String queryParameter(String name) {
         return queryParameters.get(name);
     }
 
-    public String getProtocolVersion() {
+    public String protocolVersion() {
         return protocolVersion;
     }
 
-    public Headers getHeaders() {
+    public Headers headers() {
         return headers;
     }
 
-    public String getHeader(String key) {
+    public String header(String key) {
         return headers.getFirst(key);
     }
 
-    public String getContentType() {
-        return getHeader("Content-Type");
+    public String contentType() {
+        return header("Content-Type");
     }
 
-    public String getBody() {
+    public String body() {
         return body;
     }
 
@@ -72,7 +72,7 @@ public class HttpRequest {
      * URI-encoded, and we should decode them when populating the map. In case we have several
      * parameters with the same name, the last one wins.
      */
-    public Map<String, String> getQueryParametersFromBody() {
+    public Map<String, String> queryParametersFromBody() {
         return toMap(body);
     }
 
@@ -81,11 +81,11 @@ public class HttpRequest {
      * URI-encoded, and we should decode them when populating the map. In case we have several
      * parameters with the same name, the last one wins.
      */
-    private Map<String, String> getQueryParameters(URI uri) {
+    private Map<String, String> queryParameters(URI uri) {
         return toMap(uri.getRawQuery());
     }
 
-    private Map<String, String> toMap(String source) {
+    private static Map<String, String> toMap(String source) {
         if (source == null || source.isEmpty()) {
             return Collections.emptyMap();
         }
