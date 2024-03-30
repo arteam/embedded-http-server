@@ -81,7 +81,7 @@ public class HttpRequest {
      * URI-encoded, and we should decode them when populating the map. In case we have several
      * parameters with the same name, the last one wins.
      */
-    private Map<String, String> queryParameters(URI uri) {
+    private static Map<String, String> queryParameters(URI uri) {
         return toMap(uri.getRawQuery());
     }
 
@@ -91,7 +91,8 @@ public class HttpRequest {
         }
         return Arrays.stream(source.split("&"))
                 .map(s -> s.split("="))
-                .collect(Collectors.toMap(p -> decodeUrlPart(p[0]), p -> decodeUrlPart(p[1]), (first, second) -> second));
+                .collect(Collectors.toMap(p -> decodeUrlPart(p[0]), p -> decodeUrlPart(p[1]),
+                        (first, second) -> second));
     }
 
     private static String decodeUrlPart(String encodedPart) {
@@ -100,13 +101,7 @@ public class HttpRequest {
 
     @Override
     public String toString() {
-        return "HttpRequest{" +
-                "method='" + method + '\'' +
-                ", uri=" + uri +
-                ", queryParameters=" + queryParameters +
-                ", protocolVersion='" + protocolVersion + '\'' +
-                ", headers=" + headers.entrySet() +
-                ", body='" + body + '\'' +
-                '}';
+        return "HttpRequest{method='" + method + ", uri=" + uri + ", queryParameters=" + queryParameters +
+                ", protocolVersion='" + protocolVersion + ", headers=" + headers.entrySet() + ", body='" + body + "}";
     }
 }
