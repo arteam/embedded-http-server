@@ -6,14 +6,17 @@ import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.net.InetSocketAddress;
 
-public class RunsOnSpecificPort {
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+public class RunsOnSpecificAddressTest {
 
     @RegisterExtension
     public EmbeddedHttpServerExtension httpServerExtension = new EmbeddedHttpServerExtension()
-            .withPort(15678)
-            .addHandler("/hello", (request, response) -> response.setBody("Hello, World!")
+            .withAddress(new InetSocketAddress("0.0.0.0", 13456))
+            .addHandler("/bye", (request, response) -> response
+                    .setBody("Bye, bye.")
                     .addHeader("content-type", "text/plain"));
 
     @RegisterExtension
@@ -21,12 +24,12 @@ public class RunsOnSpecificPort {
 
     @Test
     void test() throws Exception {
-        HttpGet httpGet = new HttpGet("http://127.0.0.1:15678/hello");
+        HttpGet httpGet = new HttpGet("http://127.0.0.1:13456/bye");
         String response = httpClientExtension.get().execute(httpGet, httpResponse -> {
             assertThat(httpResponse.getStatusLine().getStatusCode()).isEqualTo(200);
             assertThat(httpResponse.getFirstHeader("Content-Type").getValue()).isEqualTo("text/plain");
             return EntityUtils.toString(httpResponse.getEntity());
         });
-        assertThat(response).isEqualTo("Hello, World!");
+        assertThat(response).isEqualTo("Bye, bye.");
     }
 }
