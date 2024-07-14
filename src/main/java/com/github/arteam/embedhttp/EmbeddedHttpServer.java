@@ -66,7 +66,7 @@ public class EmbeddedHttpServer implements Closeable {
 
         for (HttpHandlerConfig config : handlers) {
             HttpContext context = sunHttpServer.createContext(config.path, httpExchange -> {
-                try {
+                try (httpExchange) {
                     Headers requestHeaders = httpExchange.getRequestHeaders();
                     HttpResponse response = new HttpResponse();
                     config.httpHandler.handle(new HttpRequest(httpExchange.getRequestMethod(),
@@ -80,8 +80,6 @@ public class EmbeddedHttpServer implements Closeable {
                     httpExchange.getResponseBody().write(byteBody);
                 } catch (IOException e) {
                     e.printStackTrace();
-                } finally {
-                    httpExchange.close();
                 }
             });
             if (config.authenticator != null) {
