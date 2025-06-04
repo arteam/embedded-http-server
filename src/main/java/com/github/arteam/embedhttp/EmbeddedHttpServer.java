@@ -12,8 +12,10 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * Represents a simple HTTP server (a facade around {@link com.sun.net.httpserver.HttpServer for unit testing.
@@ -23,7 +25,8 @@ import java.util.Map;
 public class EmbeddedHttpServer implements Closeable {
 
     private HttpServer sunHttpServer;
-    private final List<HttpHandlerConfig> handlers = new ArrayList<>();
+    private final List<HandlerConfig> handlers = new ArrayList<>();
+    private Executor executor;
 
     /**
      * Adds a new handler to the server to a path.
@@ -36,8 +39,29 @@ public class EmbeddedHttpServer implements Closeable {
      * Adds a new handler to the server to a path with an authenticator.
      */
     public EmbeddedHttpServer addHandler(String path, HttpHandler handler, Authenticator authenticator) {
-        handlers.add(new HttpHandlerConfig(path, handler, authenticator));
+        handlers.add(new HandlerConfig(path, handler, authenticator));
         return this;
+    }
+
+    /**
+     * Adds a new handler to the server to a path with an authenticator.
+     */
+    EmbeddedHttpServer addHandler(HandlerConfig handler) {
+        handlers.add(handler);
+        return this;
+    }
+
+
+    /**
+     * Adds a list handler to the server to a path with an authenticator.
+     */
+    EmbeddedHttpServer addHandlers(Collection<HandlerConfig> handler) {
+        handlers.addAll(handler);
+        return this;
+    }
+
+    void addExecutor(Executor executor) {
+        this.executor = executor;
     }
 
     /**
@@ -64,12 +88,13 @@ public class EmbeddedHttpServer implements Closeable {
             throw new RuntimeException(e);
         }
 
-        for (HttpHandlerConfig config : handlers) {
-            HttpContext context = sunHttpServer.createContext(config.path, httpExchange -> {
+        for (HandlerConfig config : handlers) {
+            HttpContext context = sunHttpServer.createContext(config.getPath(), httpExchange -> {
                 try {
                     Headers requestHeaders = httpExchange.getRequestHeaders();
                     HttpResponse response = new HttpResponse();
-                    config.httpHandler.handle(new HttpRequest(httpExchange.getRequestMethod(),
+                    HttpHandler handler = config.getHttpHandler();
+                    handler.handle(new HttpRequest(httpExchange.getRequestMethod(),
                             httpExchange.getRequestURI(), httpExchange.getProtocol(), requestHeaders,
                             readFromStream(httpExchange.getRequestBody())), response);
                     for (Map.Entry<String, List<String>> e : response.headers().entrySet()) {
@@ -84,9 +109,12 @@ public class EmbeddedHttpServer implements Closeable {
                     httpExchange.close();
                 }
             });
-            if (config.authenticator != null) {
-                context.setAuthenticator(config.authenticator);
+            if (config.getAuthenticator() != null) {
+                context.setAuthenticator(config.getAuthenticator());
             }
+        }
+        if (executor != null) {
+            sunHttpServer.setExecutor(executor);
         }
         sunHttpServer.start();
         return this;
@@ -128,16 +156,4 @@ public class EmbeddedHttpServer implements Closeable {
         return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
     }
 
-    private static class HttpHandlerConfig {
-
-        private final String path;
-        private final HttpHandler httpHandler;
-        private final Authenticator authenticator;
-
-        HttpHandlerConfig(String path, HttpHandler httpHandler, Authenticator authenticator) {
-            this.path = path;
-            this.httpHandler = httpHandler;
-            this.authenticator = authenticator;
-        }
-    }
 }
